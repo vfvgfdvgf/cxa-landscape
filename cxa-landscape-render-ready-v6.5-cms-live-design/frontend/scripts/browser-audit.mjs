@@ -79,8 +79,8 @@ try {
     title: document.title,
     mainText: (document.querySelector('main')?.innerText || '').replace(/\\s+/g, ' ').slice(0, 220),
     viewport: { width: innerWidth, height: innerHeight, scrollWidth: document.documentElement.scrollWidth },
-    hero: (() => { const node = document.querySelector('.home-hero, .page-hero'); if (!node) return null; const r = node.getBoundingClientRect(); return { x: r.x, right: r.right, width: r.width, height: r.height }; })(),
-    container: (() => { const node = document.querySelector('.home-hero .container, .page-hero .container'); if (!node) return null; const r = node.getBoundingClientRect(); return { x: r.x, right: r.right, width: r.width }; })(),
+    hero: (() => { const node = document.querySelector('.cinematic-hero, .home-hero, .page-hero'); if (!node) return null; const r = node.getBoundingClientRect(); return { x: r.x, right: r.right, width: r.width, height: r.height }; })(),
+    container: (() => { const node = document.querySelector('.cinematic-hero .container, .home-hero .container, .page-hero .container'); if (!node) return null; const r = node.getBoundingClientRect(); return { x: r.x, right: r.right, width: r.width }; })(),
     heading: (() => { const node = document.querySelector('h1'); if (!node) return null; const r = node.getBoundingClientRect(); return { x: r.x, right: r.right, width: r.width, fontSize: getComputedStyle(node).fontSize }; })(),
     header: (() => { const node = document.querySelector('.header-inner'); if (!node) return null; const r = node.getBoundingClientRect(); return { x: r.x, right: r.right, width: r.width }; })(),
     seo: {
@@ -100,6 +100,15 @@ try {
       const counts = sources.reduce((result, item) => { const key = item.kind + ':' + normalize(item.src); result[key] = (result[key] || 0) + 1; return result; }, {});
       return { counts, violations: Object.entries(counts).filter(([, count]) => count > 3) };
     })(),
+    homepageSections: [...document.querySelectorAll('[data-section-key]')].map(node => {
+      const rect = node.getBoundingClientRect();
+      return { key: node.dataset.sectionKey, order: Number(node.dataset.sectionOrder || 0), top: Math.round(rect.top + scrollY), height: Math.round(rect.height) };
+    }),
+    buttons: [...document.querySelectorAll('a.cinematic-button, button.cinematic-button')].map(node => {
+      const rect = node.getBoundingClientRect();
+      const style = getComputedStyle(node);
+      return { label: node.textContent.trim(), width: Math.round(rect.width), height: Math.round(rect.height), display: style.display, visible: rect.width > 0 && rect.height > 0 };
+    }),
     fallbacks: document.querySelectorAll('.image-fallback, .hero-image-fallback').length
   })`;
   const evaluation = await send("Runtime.evaluate", { expression, returnByValue: true }, sessionId);

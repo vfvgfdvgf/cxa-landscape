@@ -24,8 +24,8 @@
       select.insertAdjacentElement("afterend", hint);
     }
     hint.textContent = COPY[value] || COPY.text;
-    dimRows(root, '[name$="-image"], [name$="-image_url"]', value !== "image");
-    dimRows(root, '[name$="-video"], [name$="-video_url"], [name$="-mobile_video"], [name$="-mobile_video_url"], [name$="-poster"], [name$="-poster_url"]', value !== "video");
+    dimRows(root, '[name="image"], [name="image_url"], [name$="-image"], [name$="-image_url"]', value !== "image");
+    dimRows(root, '[name="video"], [name="video_url"], [name="mobile_video"], [name="mobile_video_url"], [name="poster"], [name="poster_url"], [name$="-video"], [name$="-video_url"], [name$="-mobile_video"], [name$="-mobile_video_url"], [name$="-poster"], [name$="-poster_url"]', value !== "video");
   };
 
   const addLocalPreview = (input) => {
@@ -62,5 +62,21 @@
   document.addEventListener("DOMContentLoaded", () => {
     init();
     document.addEventListener("formset:added", (event) => init(event.target));
+    const sectionForm = document.querySelector("#homesection_form, #homesectionmedia_form");
+    if (sectionForm) {
+      let dirty = false;
+      const markDirty = () => {
+        dirty = true;
+        document.body.classList.add("cms-has-unsaved-changes");
+      };
+      sectionForm.addEventListener("input", markDirty);
+      sectionForm.addEventListener("change", markDirty);
+      sectionForm.addEventListener("submit", () => { dirty = false; });
+      window.addEventListener("beforeunload", (event) => {
+        if (!dirty) return;
+        event.preventDefault();
+        event.returnValue = "";
+      });
+    }
   }, { once: true });
 })();

@@ -27,6 +27,7 @@ export class ApiError extends Error {
 interface RequestOptions {
   revalidate?: number;
   tags?: string[];
+  cache?: RequestCache;
   method?: "GET" | "POST";
   body?: unknown;
   authenticated?: boolean;
@@ -63,7 +64,9 @@ async function requestOnce<T>(path: string, options: RequestOptions): Promise<T>
     body: options.body === undefined ? undefined : JSON.stringify(options.body),
     signal: AbortSignal.timeout(12000),
     ...(method === "GET"
-      ? { next: { revalidate: options.revalidate ?? 300, tags: options.tags } }
+      ? options.cache === "no-store"
+        ? { cache: "no-store" as const }
+        : { next: { revalidate: options.revalidate ?? 300, tags: options.tags } }
       : { cache: "no-store" as const }),
   });
 

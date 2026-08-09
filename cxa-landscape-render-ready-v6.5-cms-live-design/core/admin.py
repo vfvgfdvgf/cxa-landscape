@@ -243,12 +243,14 @@ class HomeSectionAdmin(SafeChangelistAdmin):
     list_editable = ("is_visible", "sort_order")
     list_filter = ("theme", "is_visible")
     search_fields = ("title", "eyebrow", "description", "supporting_text")
-    readonly_fields = ("section_preview", "media_usage_summary")
+    readonly_fields = ("content_preview", "section_preview", "media_usage_summary")
     inlines = (HomeSectionMediaInline,)
+    save_on_top = True
+    view_on_site = lambda self, obj: "/"
     fieldsets = (
-        ("القسم", {"fields": ("key", ("is_visible", "sort_order", "theme"))}),
-        ("النصوص", {"fields": ("eyebrow", "kicker", "title", "description", "supporting_text")}),
-        ("الأزرار", {"fields": (("primary_cta_label", "primary_cta_url"), ("secondary_cta_label", "secondary_cta_url"))}),
+        ("القسم", {"fields": ("key", ("is_visible", "sort_order", "theme")), "description": "ترتيب القسم ينعكس في الرئيسية مباشرة. الهيرو يبقى دائمًا في البداية."}),
+        ("النصوص", {"fields": ("content_preview", "eyebrow", "kicker", "title", "description", "supporting_text"), "description": "كل حقل هنا ظاهر في الواجهة. العنوان يقبل عدة أسطر، والنص الإضافي يظهر بعد الوصف."}),
+        ("الأزرار", {"fields": (("primary_cta_label", "primary_cta_url"), ("secondary_cta_label", "secondary_cta_url")), "description": "الزرّان يظهران في القسم عند اكتمال النص والرابط لكل زر."}),
         ("الوسيط والمعاينة", {"fields": ("section_preview", "media_usage_summary", "media_alt"), "description": "اختر صورة أو فيديو. النظام يمنع تكرار الوسيط في أكثر من 3 مواضع."}),
         ("صورة القسم", {"fields": (("image", "image_url"),), "classes": ("collapse",), "description": "ارفع صورة أو ضع رابط HTTPS، ولا تملأ الخيارين معًا."}),
         ("فيديو القسم", {"fields": (("video", "video_url"), ("mobile_video", "mobile_video_url"), ("poster", "poster_url"), "overlay_opacity"), "classes": ("collapse",)}),
@@ -281,8 +283,37 @@ class HomeSectionAdmin(SafeChangelistAdmin):
     def media_usage_summary(self, obj):
         return homepage_media_usage_html(obj)
 
+    @admin.display(description="معاينة المحتوى")
+    def content_preview(self, obj):
+        if not obj:
+            return "احفظ القسم أولًا لعرض المعاينة."
+        title = format_html("<br>".join("{}" for _ in (obj.title or "—").splitlines()), *((obj.title or "—").splitlines()))
+        buttons = []
+        for label, url in (
+            (obj.primary_cta_label, obj.primary_cta_url),
+            (obj.secondary_cta_label, obj.secondary_cta_url),
+        ):
+            if label and url:
+                buttons.append(format_html('<span class="cms-content-preview__button">{}</span>', label))
+        button_html = format_html_join(" ", "{}", ((button,) for button in buttons))
+        return format_html(
+            '<div class="cms-content-preview"><small>{}</small><strong>{}</strong><p>{}</p><div>{}</div></div>',
+            obj.eyebrow or obj.get_key_display(),
+            title,
+            obj.description or "بدون وصف",
+            button_html,
+        )
+
     def has_delete_permission(self, request, obj=None):
         return False
+
+    def response_change(self, request, obj):
+        self.message_user(
+            request,
+            "تم حفظ القسم. حدّث الصفحة الرئيسية وبتشوف التغيير مباشرة بدون إعادة نشر.",
+            level=messages.SUCCESS,
+        )
+        return super().response_change(request, obj)
 
     @admin.display(description="معاينة الوسائط")
     def section_preview(self, obj):

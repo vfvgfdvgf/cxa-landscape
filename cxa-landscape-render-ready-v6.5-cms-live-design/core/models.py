@@ -537,6 +537,9 @@ class HomeSection(TimeStampedModel):
 
     def clean(self):
         super().clean()
+        if self.key == "hero":
+            self.is_visible = True
+            self.sort_order = 0
         validate_media_pair(self, "image", "image_url", "صورة القسم")
         validate_media_pair(self, "video", "video_url", "فيديو القسم")
         validate_media_pair(self, "mobile_video", "mobile_video_url", "فيديو الجوال")
@@ -550,6 +553,9 @@ class HomeSection(TimeStampedModel):
         validate_home_media_repetition(self)
 
     def save(self, *args, **kwargs):
+        if self.key == "hero":
+            self.is_visible = True
+            self.sort_order = 0
         if self.image:
             optimize_uploaded_image(self.image, max_size=(2200, 1600))
         if self.poster:

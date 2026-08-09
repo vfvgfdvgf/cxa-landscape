@@ -230,6 +230,10 @@ def check_frontend_contract() -> None:
     frontend_css = read("frontend/app/globals.css")
     if ".content-card__media > .image-frame" not in frontend_css:
         fail("Fill images inside content cards do not have a stable containing block")
+    cinematic_css = read("frontend/app/cinematic.css")
+    for marker in (".closing-scene > .image-frame", ".word-marquee__copy", ".cinematic-actions .cinematic-button"):
+        if marker not in cinematic_css:
+            fail(f"Homepage responsive editorial detail is missing: {marker}")
 
     middleware = read("core/middleware.py")
     for marker in ('"/static/"', '"cross-origin"'):
@@ -257,6 +261,32 @@ def check_frontend_contract() -> None:
             fail(f"Optimized/trustworthy homepage API marker is missing: {marker}")
     if "class HomeCitySerializer" not in home_serializer or "district_count" not in home_serializer:
         fail("Compact homepage city serializer is missing")
+
+    next_home = read("frontend/app/page.tsx")
+    for marker in (
+        'export const dynamic = "force-dynamic"',
+        'cache: "no-store"',
+        "homepage-section-flow",
+        "ManagedSectionMedia",
+        "SectionActions",
+        "ItemAction",
+        "style={{ order:",
+        "data-section-key={",
+    ):
+        if marker not in next_home:
+            fail(f"Live homepage CMS rendering contract is incomplete: {marker}")
+    for marker in ('response["Cache-Control"] = "no-store, max-age=0"', 'response["Pragma"] = "no-cache"'):
+        if marker not in home_site:
+            fail(f"Homepage API must expose saved CMS changes immediately: {marker}")
+
+    homepage_admin = read("core/admin.py")
+    for marker in ("content_preview", "save_on_top = True", "تم حفظ القسم"):
+        if marker not in homepage_admin:
+            fail(f"Homepage CMS editing feedback is incomplete: {marker}")
+    homepage_admin_js = read("static/js/admin-home-media.js")
+    for marker in ("beforeunload", "cms-has-unsaved-changes"):
+        if marker not in homepage_admin_js:
+            fail(f"Homepage CMS unsaved-change protection is incomplete: {marker}")
 
     google_route = read("frontend/app/api/site-verification/google/[token]/route.ts")
     if "site?.verification?.html_files" not in google_route:

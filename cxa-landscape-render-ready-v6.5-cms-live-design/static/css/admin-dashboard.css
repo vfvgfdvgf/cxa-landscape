@@ -188,6 +188,31 @@ div.breadcrumbs {
   background: #0c0f0d;
 }
 
+.cms-content-preview {
+  max-width: 760px;
+  padding: clamp(1.1rem, 3vw, 2rem);
+  color: #f7f2ea;
+  background: linear-gradient(145deg, #0c0f0d, #244c3a);
+  border: 1px solid rgba(185, 154, 97, .35);
+  border-radius: 16px;
+}
+.cms-content-preview small { display: block; margin-bottom: 1rem; color: #c8ad79; }
+.cms-content-preview strong { display: block; font-size: clamp(1.8rem, 4vw, 3.4rem); font-weight: 500; line-height: 1.05; }
+.cms-content-preview p { max-width: 42rem; margin: 1rem 0; color: rgba(255, 255, 255, .72); }
+.cms-content-preview__button { display: inline-flex; margin: .35rem 0 .35rem .5rem; padding: .5rem .85rem; border: 1px solid rgba(255, 255, 255, .45); border-radius: 999px; }
+.cms-has-unsaved-changes .submit-row::before {
+  content: "عندك تغييرات ما انحفظت";
+  display: inline-flex;
+  align-items: center;
+  margin-inline-end: auto;
+  padding: .4rem .7rem;
+  color: #7c2d12;
+  background: #ffedd5;
+  border-radius: 999px;
+  font-size: .78rem;
+  font-weight: 800;
+}
+
 .submit-row {
   position: sticky;
   z-index: 20;

@@ -150,11 +150,21 @@ class PublicApiTests(TestCase):
         self.assertTrue(home.data["sections"])
         self.assertEqual(home.data["hero"]["video"], "/videos/hero-triptych.mp4")
         self.assertIn("faq", {item["key"] for item in home.data["sections"]})
+        self.assertEqual(home["Cache-Control"], "no-store, max-age=0")
 
     def test_homepage_cms_content_is_exposed_without_code_changes(self):
         manifesto = HomeSection.objects.get(key="manifesto")
         manifesto.title = "عنوان قابل للتحرير من لوحة التحكم"
         manifesto.description = "نص محدث ينعكس في الواجهة من خلال API."
+        manifesto.kicker = "تفصيل صغير قابل للتحرير"
+        manifesto.supporting_text = "نص إضافي من لوحة التحكم"
+        manifesto.primary_cta_label = "ابدأ مشروعك"
+        manifesto.primary_cta_url = "/contact/"
+        manifesto.secondary_cta_label = "شاهد أعمالنا"
+        manifesto.secondary_cta_url = "/projects/"
+        manifesto.image_url = "/editorial/home/cms-live-preview.webp"
+        manifesto.sort_order = 37
+        manifesto.full_clean()
         manifesto.save()
 
         response = self.client.get("/api/v1/home/")
@@ -163,6 +173,12 @@ class PublicApiTests(TestCase):
         payload = next(item for item in response.data["sections"] if item["key"] == "manifesto")
         self.assertEqual(payload["title"], "عنوان قابل للتحرير من لوحة التحكم")
         self.assertEqual(payload["description"], "نص محدث ينعكس في الواجهة من خلال API.")
+        self.assertEqual(payload["kicker"], "تفصيل صغير قابل للتحرير")
+        self.assertEqual(payload["supporting_text"], "نص إضافي من لوحة التحكم")
+        self.assertEqual(payload["primary_cta"], {"label": "ابدأ مشروعك", "url": "/contact/"})
+        self.assertEqual(payload["secondary_cta"], {"label": "شاهد أعمالنا", "url": "/projects/"})
+        self.assertIn("cms-live-preview.webp", payload["media"]["image"]["url"])
+        self.assertEqual(payload["sort_order"], 37)
 
     def test_home_media_repetition_is_blocked_after_three_placements(self):
         gallery = HomeSection.objects.get(key="gallery")
@@ -462,3 +478,27 @@ class HomepageAdminTests(TestCase):
         dashboard = self.client.get("/admin/").content.decode("utf-8")
         self.assertIn("أقسام الصفحة الرئيسية", dashboard)
         self.assertIn("عناصر أقسام الرئيسية", dashboard)
+
+    def test_homepage_editor_shows_saved_content_preview(self):
+        manifesto = HomeSection.objects.get(key="manifesto")
+        manifesto.title = "عنوان ظاهر في معاينة المحرر"
+        manifesto.primary_cta_label = "زر المعاينة"
+        manifesto.primary_cta_url = "/contact/"
+        manifesto.save()
+
+        response = self.client.get(f"/admin/core/homesection/{manifesto.pk}/change/")
+
+        self.assertContains(response, "عنوان ظاهر في معاينة المحرر")
+        self.assertContains(response, "زر المعاينة")
+        self.assertContains(response, "cms-content-preview")
+
+    def test_hero_stays_visible_and_first(self):
+        hero = HomeSection.objects.get(key="hero")
+        hero.is_visible = False
+        hero.sort_order = 99
+
+        hero.save()
+        hero.refresh_from_db()
+
+        self.assertTrue(hero.is_visible)
+        self.assertEqual(hero.sort_order, 0)

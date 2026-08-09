@@ -256,7 +256,10 @@ class HomeView(APIView):
                     modified_time=home_page.updated_at if home_page else settings_obj.updated_at,
                 ),
             }
-        return Response(cap_repeated_media(payload))
+        response = Response(cap_repeated_media(payload))
+        response["Cache-Control"] = "no-store, max-age=0"
+        response["Pragma"] = "no-cache"
+        return response
 
 
 class TestimonialListView(APIView):
