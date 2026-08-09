@@ -1,0 +1,127 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div class="dashboard-shell" dir="rtl">
+    <section class="dashboard-panel dashboard-panel-hero">
+        <div>
+            <h2>لوحة مرتبة لإدارة الموقع و SEO</h2>
+            <p>ابدأ من الإعدادات، ثم الصفحات المحلية، ثم المحتوى والعملاء. العناصر التشغيلية مثل السجلات والتعليقات ومجلدات الوسائط مخفية من القائمة الرئيسية لتقليل الزحمة.</p>
+        </div>
+        <div class="dashboard-hero-actions">
+            <a class="dashboard-ai-button" href="{% url 'admin:ai_content_generator' %}">مولد المحتوى بالذكاء الاصطناعي</a>
+        </div>
+    </section>
+
+    {% if dashboard_stats %}
+    <section class="dashboard-stats">
+        {% for stat in dashboard_stats %}
+        <article class="dashboard-card">
+            <strong>{{ stat.value }}</strong>
+            <span>{{ stat.label }}</span>
+        </article>
+        {% endfor %}
+    </section>
+    {% endif %}
+
+    {% if latest_seo_run %}
+    <section class="dashboard-panel">
+        <h2>آخر تشغيل لأتمتة SEO</h2>
+        <table class="dashboard-table">
+            <tbody>
+                <tr>
+                    <th>الحالة</th>
+                    <td>{{ latest_seo_run.get_status_display }}</td>
+                </tr>
+                <tr>
+                    <th>المشاكل قبل / بعد</th>
+                    <td>{{ latest_seo_run.issues_before }} / {{ latest_seo_run.issues_after }}</td>
+                </tr>
+                <tr>
+                    <th>الذكاء الاصطناعي</th>
+                    <td>{% if latest_seo_run.ai_applied %}تم التطبيق{% elif latest_seo_run.ai_requested %}تم الطلب بدون تطبيق{% else %}لم يعمل{% endif %}</td>
+                </tr>
+                <tr>
+                    <th>الملخص</th>
+                    <td>{{ latest_seo_run.summary|default:latest_seo_run.error_message }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+    {% endif %}
+
+    {% if admin_groups %}
+    <section class="admin-groups">
+        {% for group in admin_groups %}
+        <article class="dashboard-panel admin-group">
+            <header>
+                <h2>{{ group.title }}</h2>
+                <p>{{ group.description }}</p>
+            </header>
+            <div class="admin-link-grid">
+                {% for item in group.items %}
+                <a class="admin-link-card" href="{{ item.url }}">
+                    <strong>{{ item.label }}</strong>
+                    <span>{{ item.note }}</span>
+                </a>
+                {% endfor %}
+            </div>
+        </article>
+        {% endfor %}
+    </section>
+    {% endif %}
+
+    {% if recent_leads %}
+    <section class="dashboard-panel">
+        <h2>أحدث طلبات العملاء</h2>
+        <table class="dashboard-table">
+            <thead>
+                <tr>
+                    <th>الاسم</th>
+                    <th>الهاتف</th>
+                    <th>المدينة</th>
+                    <th>الحالة</th>
+                    <th>التاريخ</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in recent_leads %}
+                <tr>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.phone }}</td>
+                    <td>{{ item.city_name }}</td>
+                    <td>{{ item.get_status_display }}</td>
+                    <td>{{ item.created_at|date:"Y-m-d H:i" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+    {% endif %}
+
+    {% if seo_issues %}
+    <section class="dashboard-panel">
+        <h2>تقرير SEO اليومي</h2>
+        <table class="dashboard-table">
+            <thead>
+                <tr>
+                    <th>المشكلة</th>
+                    <th>الصفحة</th>
+                    <th>الأهمية</th>
+                    <th>الاقتراح</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in seo_issues %}
+                <tr>
+                    <td>{{ item.title }}</td>
+                    <td>{{ item.page_url }}</td>
+                    <td>{{ item.get_severity_display }}</td>
+                    <td>{{ item.suggested_fix|default:item.details }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="page-hero compact">
+    <div class="container page-hero-shell">
+        <div>
+            <span class="eyebrow">فهرس محتوى الموقع</span>
+            <h1>{{ archive_title }}</h1>
+            <p>{{ archive_intro }}</p>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="archive-stats">
+            <a href="{% url 'archive_services' %}"><strong>{{ counts.services }}</strong><span>صفحة خدمة</span></a>
+            <a href="{% url 'archive_cities' %}"><strong>{{ counts.cities }}</strong><span>مدينة</span></a>
+            <a href="{% url 'archive_cities' %}"><strong>{{ counts.districts }}</strong><span>حي</span></a>
+            <a href="{% url 'archive_cities' %}"><strong>{{ counts.city_services }}</strong><span>خدمة محلية</span></a>
+            <a href="{% url 'archive_articles' %}"><strong>{{ counts.articles }}</strong><span>مقال</span></a>
+        </div>
+
+        <div class="archive-section">
+            <div class="section-heading split-heading">
+                <div>
+                    <span class="eyebrow">مسارات رئيسية</span>
+                    <h2>صفحات الموقع الأساسية</h2>
+                </div>
+                <a class="btn btn-outline" href="{% url 'sitemap_xml' %}">XML Sitemap</a>
+            </div>
+            <div class="archive-link-grid">
+                {% for item in static_pages %}
+                <a href="{{ item.url }}"><span>{{ item.kind }}</span><strong>{{ item.title }}</strong></a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="archive-section">
+            <div class="section-heading split-heading">
+                <div>
+                    <span class="eyebrow">الخدمات</span>
+                    <h2>أهم صفحات النخيل واللاندسكيب</h2>
+                </div>
+                <a class="btn btn-outline" href="{% url 'archive_services' %}">كل الخدمات</a>
+            </div>
+            <div class="archive-link-grid dense">
+                {% for item in services %}
+                <a href="{{ item.url }}"><span>خدمة</span><strong>{{ item.title }}</strong></a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="archive-section">
+            <div class="section-heading split-heading">
+                <div>
+                    <span class="eyebrow">حاسبات تكلفة</span>
+                    <h2>صفحات تقدير الأسعار حسب الخدمة</h2>
+                </div>
+                <a class="btn btn-outline" href="{% url 'cost_calculator' %}">مركز الحاسبات</a>
+            </div>
+            <div class="archive-link-grid dense">
+                {% for item in calculators %}
+                <a href="{% url 'cost_calculator_detail' item.slug %}"><span>{{ item.unit }}</span><strong>{{ item.title }}</strong></a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="archive-section">
+            <div class="section-heading split-heading">
+                <div>
+                    <span class="eyebrow">المدن والأحياء</span>
+                    <h2>المدن والأحياء والخدمات المحلية</h2>
+                </div>
+                <a class="btn btn-outline" href="{% url 'archive_cities' %}">كل المدن والخدمات المحلية</a>
+            </div>
+            <div class="archive-link-grid dense">
+                {% for item in cities %}
+                <a href="{{ item.url }}"><span>{{ item.region|default:"مدينة" }}</span><strong>{{ item.title }}</strong></a>
+                {% endfor %}
+                {% for item in districts %}
+                <a href="{{ item.url }}"><span>{{ item.city }}</span><strong>حي {{ item.title }}</strong></a>
+                {% endfor %}
+                {% for item in city_services %}
+                <a href="{{ item.url }}"><span>{{ item.city }}</span><strong>{{ item.service }}</strong></a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="archive-section">
+            <div class="section-heading split-heading">
+                <div>
+                    <span class="eyebrow">محتوى تحريري</span>
+                    <h2>المقالات والتصنيفات</h2>
+                </div>
+                <a class="btn btn-outline" href="{% url 'archive_articles' %}">كل المقالات</a>
+            </div>
+            <div class="archive-link-grid dense">
+                {% for item in articles %}
+                <a href="{{ item.url }}"><span>مقال</span><strong>{{ item.title }}</strong></a>
+                {% endfor %}
+                {% for item in categories %}
+                <a href="{{ item.url }}"><span>تصنيف</span><strong>{{ item.title }}</strong></a>
+                {% endfor %}
+                {% for item in tags %}
+                <a href="{{ item.url }}"><span>وسم</span><strong>{{ item.title }}</strong></a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

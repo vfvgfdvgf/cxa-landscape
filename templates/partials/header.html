@@ -1,0 +1,63 @@
+{% load static %}
+<header class="site-header" id="top">
+  <div class="container nn-header-capsule">
+    <a class="nn-header-brand" href="{% url 'home' %}" aria-label="{{ site_name }} - الرئيسية" data-nav-key="home">
+      <span class="nn-header-brand-mark" aria-hidden="true">ن</span>
+      <span class="nn-header-brand-copy"><strong>{{ site_name }}</strong><small>نخيل · حدائق · ري · شبوك</small></span>
+    </a>
+
+    <nav class="nn-desktop-nav" aria-label="التنقل الرئيسي">
+      <a href="{% url 'home' %}" data-nav-key="home">الرئيسية</a>
+      <a href="{% url 'cities' %}" data-nav-key="cities">المدن</a>
+      <a href="{% url 'portfolio' %}" data-nav-key="portfolio">المشاريع</a>
+      <a href="{% url 'services' %}" data-nav-key="services">الخدمات</a>
+      <a href="{% url 'blog' %}" data-nav-key="blog">المقالات</a>
+      <a href="{% url 'about' %}" data-nav-key="about">من نحن</a>
+    </nav>
+
+    <div class="nn-header-tools">
+      <button class="nn-header-search-button" type="button" data-open-search aria-label="فتح البحث">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
+      </button>
+      <button class="nn-mobile-menu-button" type="button" data-open-menu aria-label="فتح القائمة" aria-expanded="false">
+        <span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="nn-shell-overlay nn-menu-overlay" data-menu-overlay hidden>
+  <button class="nn-overlay-backdrop" type="button" data-close-overlay aria-label="إغلاق القائمة"></button>
+  <div class="nn-overlay-panel nn-menu-panel" role="dialog" aria-modal="true" aria-labelledby="site-menu-title">
+    <div class="nn-overlay-toolbar">
+      <a class="nn-overlay-logo" href="{% url 'home' %}" data-close-overlay><b>ن</b><span>نخيل نجد</span></a>
+      <div class="nn-overlay-toolbar-actions">
+        <button type="button" class="nn-overlay-search-shortcut" data-switch-search aria-label="البحث">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
+        </button>
+        <button type="button" class="nn-overlay-close" data-close-overlay aria-label="إغلاق"><span></span><span></span></button>
+      </div>
+    </div>
+    <nav class="nn-overlay-nav" id="site-menu-title" aria-label="قائمة الموقع">
+      <a href="{% url 'home' %}" data-nav-key="home"><span>الرئيسية</span><b>←</b></a>
+      <a href="{% url 'services' %}" data-nav-key="services"><span>الخدمات</span><b>←</b></a>
+      <a href="{% url 'portfolio' %}" data-nav-key="portfolio"><span>المشاريع</span><b>←</b></a>
+      <a href="{% url 'cities' %}" data-nav-key="cities"><span>المدن والأحياء</span><b>←</b></a>
+      <a href="{% url 'blog' %}" data-nav-key="blog"><span>المقالات</span><b>←</b></a>
+      <a href="{% url 'contact' %}" data-nav-key="contact"><span>التواصل</span><b>←</b></a>
+    </nav>
+    <a class="nn-menu-whatsapp" href="{{ whatsapp_url }}" target="_blank" rel="noopener"><img src="{% static 'images/whatsapp.svg' %}" alt="" aria-hidden="true" decoding="async">واتساب</a>
+  </div>
+</div>
+
+<div class="nn-shell-overlay nn-search-overlay" data-search-overlay hidden>
+  <button class="nn-overlay-backdrop" type="button" data-close-overlay aria-label="إغلاق البحث"></button>
+  <div class="nn-search-dialog" role="dialog" aria-modal="true" aria-labelledby="site-search-title">
+    <form class="nn-global-search" action="{% url 'blog' %}" method="get" data-swup-form>
+      <label id="site-search-title" for="global-site-search">البحث</label>
+      <input id="global-site-search" type="search" name="q" placeholder="ابحث في الخدمات والمقالات" autocomplete="off">
+      <button type="submit" aria-label="تنفيذ البحث"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg></button>
+    </form>
+    <button type="button" class="nn-search-close" data-close-overlay aria-label="إغلاق"><span></span><span></span></button>
+  </div>
+</div>

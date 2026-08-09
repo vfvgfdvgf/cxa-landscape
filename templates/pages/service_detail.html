@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load static seo_images %}
+
+{% block extra_head %}
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Service","name":"{{ service.name|escapejs }}","description":"{{ seo.description|escapejs }}","provider":{"@type":"LocalBusiness","name":"{{ site_name|escapejs }}","telephone":"{{ contact_phone|escapejs }}","url":"{{ site_url }}/"},"areaServed":"SA","url":"{{ seo.canonical|escapejs }}"}
+</script>
+{% endblock %}
+
+{% block content %}
+<section class="nn-page-hero">
+  <div class="container nn-page-hero-shell">
+    <div>
+      <nav class="nn-breadcrumb"><a href="{% url 'home' %}">الرئيسية</a><span>/</span><a href="{% url 'services' %}">الخدمات</a><span>/</span><span>{{ service.name }}</span></nav>
+      <div class="nn-meta">{% if service.category %}<span class="nn-chip nn-chip-green">{{ service.category }}</span>{% endif %}{% if service.primary_city %}<span class="nn-chip">{{ service.primary_city }}{% if service.primary_district %} · {{ service.primary_district }}{% endif %}</span>{% endif %}</div>
+      <h1>{{ service.name }}</h1>
+      <p>{{ service.description }}</p>
+      <div class="nn-hero-actions" style="margin-top:24px; margin-bottom:0;"><a class="btn btn-whatsapp" href="{{ whatsapp_url }}" target="_blank" rel="noopener"><img src="{% static 'images/whatsapp.svg' %}" alt="" aria-hidden="true" decoding="async">طلب الخدمة</a><a class="btn btn-outline" href="#cities">اختر المدينة</a></div>
+    </div>
+    {% with hero_image=page_images|first %}{% if hero_image %}<figure class="nn-page-hero-visual">{% image_srcset hero_image.image_url as srcset %}{% image_dimensions hero_image.image_url as dimensions %}<img src="{{ hero_image.image_url }}" {{ dimensions|safe }} {% if srcset %}srcset="{{ srcset }}" sizes="(max-width:820px) 100vw, 42vw"{% endif %} alt="{{ service.name }}" loading="eager" fetchpriority="high" decoding="async"></figure>{% endif %}{% endwith %}
+  </div>
+</section>
+
+<section class="section">
+  <div class="container nn-two-col">
+    <article class="nn-panel">
+      <span class="eyebrow">نطاق الخدمة</span><h2>ما الذي يشمله {{ service.name }}؟</h2><p>{{ service.description }}</p>
+      {% if service.benefits %}<ul>{% for benefit in service.benefits %}<li>{{ benefit }}</li>{% endfor %}</ul>{% endif %}
+      {% if service.tags %}<div class="nn-meta" style="margin-top:22px;">{% for tag in service.tags %}<span class="nn-chip">{{ tag }}</span>{% endfor %}</div>{% endif %}
+    </article>
+    <aside class="nn-panel nn-sticky-panel"><span class="eyebrow">بيانات الطلب</span><h2>جهز الموقع والصور</h2><p>حدد المدينة والحي، أرسل صور الموقع والمساحة التقريبية، واذكر العدد أو المقاس المطلوب إن كان الطلب توريد نخيل أو شبك.</p><a class="btn btn-whatsapp" href="{{ whatsapp_url }}" target="_blank" rel="noopener"><img src="{% static 'images/whatsapp.svg' %}" alt="" aria-hidden="true" decoding="async">إرسال التفاصيل</a></aside>
+  </div>
+</section>
+
+<section class="section nn-soft-section" id="cities">
+  <div class="container"><header class="section-heading split-heading"><div><span class="eyebrow">التغطية المحلية</span><h2>{{ service.name }} حسب المدينة</h2></div><p>افتح مدينتك لعرض الخدمة بصياغة محلية وربطها بالأحياء والمشاريع والمقالات.</p></header><div class="nn-district-grid">{% for city in cities %}<a class="nn-district-link" href="{{ city.url }}"><span>{{ city.name }}</span><small>تفاصيل</small></a>{% endfor %}</div></div>
+</section>
+
+<section class="section">
+  <div class="container"><header class="section-heading"><span class="eyebrow">قبل التنفيذ</span><h2>ثلاث نقاط تحدد النتيجة</h2></header><div class="nn-grid nn-grid-3"><article class="nn-panel"><span class="nn-chip nn-chip-green">01</span><h3>ملاءمة الموقع</h3><p>التربة والصرف والشمس والرياح والمساحة المتاحة.</p></article><article class="nn-panel"><span class="nn-chip nn-chip-green">02</span><h3>المادة والمقاس</h3><p>نوع النخيل أو النبات أو الشبك، والعدد والارتفاع والتشطيب.</p></article><article class="nn-panel"><span class="nn-chip nn-chip-green">03</span><h3>الصيانة</h3><p>الري والمتابعة والتنظيف والتقليم والإصلاح بعد التنفيذ.</p></article></div></div>
+</section>
+{% endblock %}

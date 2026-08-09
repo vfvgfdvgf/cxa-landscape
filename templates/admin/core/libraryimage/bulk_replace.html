@@ -1,0 +1,48 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div class="dashboard-shell" dir="rtl">
+    <section class="dashboard-panel dashboard-panel-hero">
+        <div>
+            <h2>استبدال صور مكتبة الموقع دفعة واحدة</h2>
+            <p>ارفع صورًا جديدة أو ملف ZIP. سيتم تغيير ملف الصورة فقط، مع الحفاظ على العنوان والوصف البديل والتصنيف ومجموعة الاستخدام كما هي.</p>
+        </div>
+        <a class="dashboard-ai-button secondary" href="{% url 'admin:core_libraryimage_changelist' %}">العودة لصور المكتبة</a>
+    </section>
+
+    <section class="dashboard-panel ai-form-section">
+        <header class="ai-section-header">
+            <span>عدد الصور المستهدفة: {{ target_count }}</span>
+            <h2>طريقة الاستبدال</h2>
+            <p>اختر المطابقة حسب ترتيب الصور إذا كانت الصور الجديدة مرتبة مثل القائمة، أو حسب اسم الملف الأصلي إذا كانت أسماء الملفات مطابقة.</p>
+        </header>
+
+        <form method="post" enctype="multipart/form-data" class="ai-generator-form">
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+            <div class="errors">{{ form.non_field_errors }}</div>
+            {% endif %}
+
+            <div class="ai-field-grid two">
+                {% include "admin/partials/ai_field.html" with field=form.scope %}
+                {% include "admin/partials/ai_field.html" with field=form.match_mode %}
+            </div>
+
+            <div class="ai-field-grid two">
+                {% include "admin/partials/ai_field.html" with field=form.images %}
+                {% include "admin/partials/ai_field.html" with field=form.zip_file %}
+            </div>
+
+            <div class="ai-options-card">
+                {% include "admin/partials/ai_field.html" with field=form.clear_external_url compact=True %}
+                <p>الصيغ المدعومة: {{ supported_extensions }}</p>
+            </div>
+
+            <section class="ai-submit-bar">
+                <a class="dashboard-ai-button secondary" href="{% url 'admin:core_libraryimage_changelist' %}">إلغاء</a>
+                <button type="submit" class="dashboard-ai-button">استبدال الصور الآن</button>
+            </section>
+        </form>
+    </section>
+</div>
+{% endblock %}

@@ -1,0 +1,280 @@
+/* Nakheel Najd V4.4 — fixed top header, minimal hero, simple footer, clean gallery. */
+:root {
+  --nn44-paper: #f4f1ea;
+  --nn44-ink: #171914;
+  --nn44-green: #123f31;
+  --nn44-green-dark: #0b291f;
+  --nn44-line: rgba(23,25,20,.12);
+  --nn44-header-h: 76px;
+}
+
+html[dir="rtl"], body { direction: rtl; }
+body { background: var(--nn44-paper) !important; }
+body:not(.page-home) #swup { padding-top: var(--nn44-header-h) !important; }
+body.page-home .conversion-bar { display: none !important; }
+
+/* Header is attached to the top edge, never floating. */
+.site-header,
+body.page-home .site-header {
+  position: fixed !important;
+  inset: 0 0 auto !important;
+  z-index: 1200;
+  width: 100%;
+  height: var(--nn44-header-h) !important;
+  padding: 0 !important;
+  background: rgba(244,241,234,.96) !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--nn44-line) !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(16px) saturate(120%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(120%) !important;
+  pointer-events: auto !important;
+}
+body.page-home .site-header {
+  color: #fff;
+  background: rgba(10,35,26,.92) !important;
+  border-bottom-color: rgba(255,255,255,.12) !important;
+}
+.nn-header-capsule {
+  width: min(100% - 40px, 1240px);
+  height: var(--nn44-header-h);
+  min-height: 0 !important;
+  margin: 0 auto;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  color: var(--nn44-ink);
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.nn-header-brand { order: 1; color: inherit !important; }
+.nn-desktop-nav { order: 2; flex: 1; justify-content: center; }
+.nn-header-tools { order: 3; }
+.nn-header-brand-mark {
+  width: 38px;
+  height: 38px;
+  color: #fff;
+  background: var(--nn44-green) !important;
+  border: 0 !important;
+}
+.nn-header-brand strong,
+.nn-header-brand small,
+.nn-desktop-nav a,
+.nn-header-search-button,
+.nn-mobile-menu-button { color: var(--nn44-ink) !important; }
+body.page-home .nn-header-brand strong,
+body.page-home .nn-header-brand small,
+body.page-home .nn-desktop-nav a,
+body.page-home .nn-header-search-button,
+body.page-home .nn-mobile-menu-button { color: #fff !important; }
+.nn-desktop-nav a {
+  padding: 9px 12px !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  font-size: .78rem;
+}
+.nn-desktop-nav a::after {
+  inset: auto 20% -9px !important;
+  background: currentColor !important;
+}
+.nn-header-search-button,
+.nn-mobile-menu-button {
+  width: 40px;
+  height: 40px;
+  background: transparent !important;
+  border: 1px solid currentColor !important;
+  border-radius: 50%;
+  opacity: .88;
+}
+
+/* Simple RTL mobile header. */
+@media (max-width: 820px) {
+  :root { --nn44-header-h: 64px; }
+  .nn-header-capsule {
+    width: 100%;
+    height: var(--nn44-header-h);
+    padding-inline: 14px !important;
+    display: flex !important;
+    direction: rtl;
+  }
+  .nn-header-brand { order: 1; margin-inline-end: 0; }
+  .nn-header-tools { order: 2; margin-inline-start: auto; display: flex; gap: 6px; }
+  .nn-desktop-nav { display: none !important; }
+  .nn-mobile-menu-button { display: inline-grid !important; }
+  .nn-header-brand-mark { width: 34px; height: 34px; }
+  .nn-header-brand-copy small { display: none !important; }
+  .nn-header-brand-copy strong { font-size: .82rem !important; }
+  .nn-header-search-button,
+  .nn-mobile-menu-button { width: 36px; height: 36px; }
+}
+
+/* Mobile menu is a clean full-height Arabic panel. */
+.nn-menu-overlay { direction: rtl; }
+.nn-menu-overlay .nn-overlay-backdrop { background: rgba(8,29,22,.66); }
+.nn-menu-panel {
+  inset: 0 !important;
+  padding: 0 !important;
+  color: #fff;
+  background: #10271f !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.nn-overlay-toolbar {
+  width: min(100% - 32px, 1120px);
+  height: var(--nn44-header-h);
+  min-height: var(--nn44-header-h) !important;
+  margin: 0 auto;
+  display: flex !important;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255,255,255,.12);
+}
+.nn-overlay-logo { order: 1; margin: 0 !important; }
+.nn-overlay-toolbar-actions { order: 2; display: flex; gap: 7px; }
+.nn-overlay-nav {
+  width: min(100% - 32px, 760px);
+  margin: clamp(42px, 9vh, 94px) auto 0;
+  border-top: 1px solid rgba(255,255,255,.14);
+}
+.nn-overlay-nav a {
+  min-height: 62px;
+  direction: rtl;
+  text-align: right;
+  font-size: clamp(1.1rem, 4vw, 1.55rem);
+}
+.nn-menu-whatsapp {
+  width: min(100% - 32px, 760px);
+  min-height: 48px;
+  margin: 28px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,.22);
+  border-radius: 999px;
+}
+.nn-menu-whatsapp img { width: 18px; height: 18px; }
+
+/* Search direction and order. */
+.nn-search-dialog {
+  direction: rtl;
+  grid-template-columns: 1fr 64px !important;
+  align-items: center;
+}
+.nn-global-search { grid-column: 1; direction: rtl; }
+.nn-search-close { grid-column: 2; width: 64px; height: 64px; }
+.nn-global-search input { direction: rtl; text-align: right; }
+
+/* Hero is image-led with only a small identity/action block. */
+.nn-home-hero,
+.nn-home-hero-inner { min-height: 100svh !important; height: 100svh !important; }
+.nn-home-hero-inner {
+  padding-top: calc(var(--nn44-header-h) + 24px) !important;
+  padding-bottom: 46px !important;
+  display: flex;
+  align-items: flex-end !important;
+  justify-content: flex-start;
+}
+.nn-home-hero-shade {
+  background: linear-gradient(180deg, rgba(7,24,18,.08) 30%, rgba(7,24,18,.62) 100%) !important;
+}
+.nn-home-hero-minimal {
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+  gap: 6px 14px;
+  padding: 14px 16px;
+  color: #fff;
+  background: rgba(8,31,23,.62);
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 18px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.nn-home-hero-minimal strong { font-size: 1.05rem; }
+.nn-home-hero-minimal span { color: rgba(255,255,255,.72); font-size: .72rem; }
+.nn-home-hero-minimal .btn { grid-column: 1 / -1; min-height: 43px; margin-top: 4px; }
+.nn-home-hero-copy,
+.nn-home-hero-facts { display: none !important; }
+
+/* Gallery: no zoom, shade, overlay, or floating caption. */
+.nn-home-gallery .nn-gallery-item {
+  overflow: visible !important;
+  border-radius: 0 !important;
+}
+.nn-home-gallery .nn-gallery-item::after { display: none !important; }
+.nn-home-gallery .nn-gallery-item img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 18px !important;
+  transform: none !important;
+  transition: none !important;
+  filter: none !important;
+}
+.nn-home-gallery .nn-gallery-item:hover img { transform: none !important; }
+.nn-home-gallery .nn-gallery-item figcaption {
+  position: static !important;
+  display: block;
+  margin-top: 9px;
+  padding: 0 !important;
+  color: var(--nn44-ink) !important;
+  font-size: .76rem;
+  font-weight: 700;
+  background: transparent !important;
+}
+
+/* Service slides stay photographic but use distinct media supplied by the view. */
+.nn-service-slide > a { min-height: min(66svh, 620px) !important; }
+.nn-service-slide img { transform: none !important; }
+.nn-service-slide:hover img { transform: none !important; }
+
+/* Simple paper footer. */
+.site-footer {
+  margin-top: 72px;
+  padding: 34px 0 18px !important;
+  color: var(--nn44-ink) !important;
+  background: var(--nn44-paper) !important;
+  border-top: 1px solid var(--nn44-line) !important;
+}
+.nn-footer-main {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 30px;
+}
+.nn-footer-brand { display: inline-flex; align-items: center; gap: 9px; color: var(--nn44-ink) !important; }
+.nn-footer-brand span { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; color: #fff; background: var(--nn44-green); }
+.nn-footer-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 20px; }
+.site-footer .nn-footer-links a,
+.site-footer .nn-footer-bottom a { margin: 0 !important; color: rgba(23,25,20,.68) !important; }
+.nn-footer-whatsapp { min-height: 40px; display: inline-flex !important; align-items: center; gap: 7px; margin: 0 !important; padding: 0 14px; border: 1px solid var(--nn44-line); border-radius: 999px; color: var(--nn44-ink) !important; }
+.nn-footer-whatsapp img { width: 17px; height: 17px; }
+.nn-footer-bottom { margin-top: 26px; padding-top: 16px; display: flex; justify-content: space-between; gap: 14px; border-top: 1px solid var(--nn44-line); color: rgba(23,25,20,.55); font-size: .72rem; }
+
+@media (max-width: 820px) {
+  .nn-home-hero-minimal { width: min(100%, 280px); }
+  .nn-hero-scroll { bottom: 22px; }
+  .nn-search-dialog { width: calc(100% - 24px); margin-top: 92px; grid-template-columns: 1fr 52px !important; gap: 8px; }
+  .nn-search-close { width: 52px; height: 52px; }
+  .nn-global-search { min-height: 56px; padding-inline: 16px; }
+  .nn-global-search label { display: none; }
+  .nn-footer-main { grid-template-columns: 1fr; justify-items: start; gap: 22px; }
+  .nn-footer-links { justify-content: flex-start; gap: 8px 16px; }
+  .nn-footer-bottom { flex-direction: column; }
+  .site-footer { padding-bottom: 24px !important; }
+}
+
+@media (max-width: 520px) {
+  .nn-home-hero-inner { padding-inline: 14px !important; }
+  .nn-home-hero-minimal { padding: 12px 13px; border-radius: 15px; }
+  .nn-brand-marquee { padding-block: 18px 24px !important; }
+  .nn-brand-marquee span { font-size: clamp(2.7rem, 16vw, 4.3rem) !important; }
+}

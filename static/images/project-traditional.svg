@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480">
+  <rect width="640" height="480" fill="#f2e6d8"/>
+  <rect x="120" y="170" width="400" height="200" rx="16" fill="#b7895b"/>
+  <rect x="155" y="125" width="330" height="80" rx="18" fill="#8d623b"/>
+  <rect x="285" y="250" width="70" height="120" fill="#6c4b2e"/>
+  <rect x="180" y="220" width="50" height="50" fill="#f0d5a4"/>
+  <rect x="410" y="220" width="50" height="50" fill="#f0d5a4"/>
+  <text x="320" y="430" font-size="32" text-anchor="middle" fill="#6c4b2e" font-family="Segoe UI">Traditional Majlis</text>
+</svg>

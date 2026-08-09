@@ -1,0 +1,21 @@
+{% load static %}
+<footer class="site-footer">
+  <div class="container nn-footer-main">
+    <a class="nn-footer-brand" href="{% url 'home' %}"><span>ن</span><strong>{{ site_name }}</strong></a>
+    <nav class="nn-footer-links" aria-label="روابط الفوتر">
+      <a href="{% url 'services' %}">الخدمات</a>
+      <a href="{% url 'portfolio' %}">المشاريع</a>
+      <a href="{% url 'cities' %}">المدن</a>
+      <a href="{% url 'blog' %}">المقالات</a>
+      <a href="{% url 'about' %}">من نحن</a>
+      <a href="{% url 'contact' %}">التواصل</a>
+      <a href="{% url 'privacy' %}">الخصوصية</a>
+      <a href="{% url 'terms' %}">الشروط</a>
+    </nav>
+    <a class="nn-footer-whatsapp" href="{{ whatsapp_url }}" target="_blank" rel="noopener"><img src="{% static 'images/whatsapp.svg' %}" alt="" aria-hidden="true" decoding="async">واتساب</a>
+  </div>
+  <div class="container nn-footer-bottom">
+    <span>© {{ site_name }}. جميع الحقوق محفوظة.</span>
+    <a href="https://getsiaq.com/developer/" target="_blank" rel="noopener">تصميم وتطوير ياسر المستنيري</a>
+  </div>
+</footer>

@@ -1,0 +1,52 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div class="dashboard-shell" dir="rtl">
+    <section class="dashboard-panel dashboard-panel-hero">
+        <div>
+            <h2>رفع صور جديدة وتوزيعها على الموقع</h2>
+            <p>ارفع صورًا متعددة أو ملف ZIP. سيضيفها النظام إلى مكتبة صور الموقع ويوزعها تلقائيًا على الهيرو والمعارض وصفحات الخدمات والمدن والمدونة.</p>
+        </div>
+        <a class="dashboard-ai-button secondary" href="{% url 'admin:core_libraryimage_changelist' %}">العودة لصور المكتبة</a>
+    </section>
+
+    <section class="dashboard-panel ai-form-section">
+        <header class="ai-section-header">
+            <span>إضافة صور جديدة</span>
+            <h2>إعدادات التوزيع</h2>
+            <p>استخدم التوزيع التلقائي ليأخذ كل جزء من الموقع نصيبه من الصور، أو اختر مكانًا واحدًا إذا كانت الصور مخصصة لصفحة بعينها.</p>
+        </header>
+
+        <form method="post" enctype="multipart/form-data" class="ai-generator-form">
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+            <div class="errors">{{ form.non_field_errors }}</div>
+            {% endif %}
+
+            <div class="ai-field-grid two">
+                {% include "admin/partials/ai_field.html" with field=form.distribution_mode %}
+                {% include "admin/partials/ai_field.html" with field=form.usage_group %}
+            </div>
+
+            <div class="ai-field-grid two">
+                {% include "admin/partials/ai_field.html" with field=form.category %}
+                {% include "admin/partials/ai_field.html" with field=form.activate_now compact=True %}
+            </div>
+
+            <div class="ai-field-grid two">
+                {% include "admin/partials/ai_field.html" with field=form.images %}
+                {% include "admin/partials/ai_field.html" with field=form.zip_file %}
+            </div>
+
+            <div class="ai-options-card">
+                <p>الصيغ المدعومة: {{ supported_extensions }}</p>
+            </div>
+
+            <section class="ai-submit-bar">
+                <a class="dashboard-ai-button secondary" href="{% url 'admin:core_libraryimage_changelist' %}">إلغاء</a>
+                <button type="submit" class="dashboard-ai-button">رفع وتوزيع الصور الآن</button>
+            </section>
+        </form>
+    </section>
+</div>
+{% endblock %}

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480">
+  <rect width="640" height="480" fill="#f8f0df"/>
+  <rect x="0" y="340" width="640" height="140" fill="#d8b37a"/>
+  <rect x="298" y="150" width="44" height="220" rx="20" fill="#95673a"/>
+  <g fill="#3c7c4f">
+    <path d="M320 170 C250 150 220 90 180 70 C230 70 290 100 320 150"/>
+    <path d="M320 170 C390 150 420 90 460 70 C410 70 350 100 320 150"/>
+    <path d="M320 170 C235 185 190 160 135 135 C205 120 270 120 320 150"/>
+    <path d="M320 170 C405 185 450 160 505 135 C435 120 370 120 320 150"/>
+    <path d="M320 170 C310 105 325 70 340 40 C352 88 348 128 332 162"/>
+  </g>
+  <text x="320" y="430" font-size="34" text-anchor="middle" fill="#95673a" font-family="Segoe UI">Palm Trees</text>
+</svg>

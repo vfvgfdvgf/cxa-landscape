@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% load static seo_images %}
+
+{% block extra_head %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "name": "مشاريع وخدمات حي {{ district.name|escapejs }} في {{ city.name|escapejs }}",
+  "description": "{{ seo.description|escapejs }}",
+  "url": "{{ seo.canonical|escapejs }}"
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<section class="nn-page-hero">
+  <div class="container nn-page-hero-shell">
+    <div>
+      <nav class="nn-breadcrumb" aria-label="مسار الصفحة"><a href="{% url 'home' %}">الرئيسية</a><span>/</span><a href="{% url 'cities' %}">المدن</a><span>/</span><a href="{% url 'city_detail' city.slug %}">{{ city.name }}</a><span>/</span><span>{{ district.name }}</span></nav>
+      <span class="eyebrow">حي {{ district.name }}</span>
+      <h1>مشاريع وخدمات نخيل نجد في حي {{ district.name }}</h1>
+      <p>صفحة محلية تعرض المشاريع المرتبطة بالحي، وأقرب خدمات النخيل والحدائق والري والشبوك، ومقالات موزعة داخل {{ city.name }}.</p>
+      <div class="nn-hero-actions" style="margin-top:24px; margin-bottom:0;">
+        <a class="btn btn-whatsapp" href="{{ whatsapp_url }}?text={{ quote_message|urlencode }}" target="_blank" rel="noopener"><img src="{% static 'images/whatsapp.svg' %}" alt="" aria-hidden="true" decoding="async">طلب خدمة في الحي</a>
+        <a class="btn btn-outline" href="{% url 'city_detail' city.slug %}#districts">جميع أحياء {{ city.name }}</a>
+      </div>
+    </div>
+    {% with hero_image=page_images|first %}
+    {% if hero_image %}
+    <figure class="nn-page-hero-visual">
+      {% image_srcset hero_image.image_url as srcset %}
+      {% image_dimensions hero_image.image_url as dimensions %}
+      <img src="{{ hero_image.image_url }}" {{ dimensions|safe }} {% if srcset %}srcset="{{ srcset }}" sizes="(max-width: 820px) 100vw, 42vw"{% endif %} alt="مشاريع نخيل ولاندسكيب في حي {{ district.name }}" loading="eager" fetchpriority="high" decoding="async">
+    </figure>
+    {% endif %}
+    {% endwith %}
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <header class="section-heading split-heading">
+      <div><span class="eyebrow">المشاريع</span><h2>{{ project_scope }}</h2></div>
+      <p>{% if exact_project_count %}هذه المشاريع مسجلة مباشرة على حي {{ district.name }}.{% else %}ما فيه مشروع منشور على الحي حاليًا، لذلك تظهر نماذج من {{ city.name }} أو من أعمال الموقع بدل ترك الصفحة فارغة.{% endif %}</p>
+    </header>
+    <div class="nn-grid nn-grid-3">
+      {% for item in projects %}
+      <article class="nn-project-card reveal">
+        {% image_srcset item.image_url as srcset %}
+        {% image_dimensions item.image_url as dimensions %}
+        <img src="{{ item.image_url }}" {{ dimensions|safe }} {% if srcset %}srcset="{{ srcset }}" sizes="(max-width: 640px) 100vw, 33vw"{% endif %} alt="{{ item.title }}" loading="lazy" decoding="async">
+        <div class="nn-project-copy">
+          <div class="nn-meta"><span class="nn-chip">{{ item.category }}</span>{% if item.city %}<span class="nn-chip">{{ item.city }}{% if item.district %} · {{ item.district }}{% endif %}</span>{% endif %}</div>
+          <h3>{{ item.title }}</h3><p>{{ item.description|truncatechars:125 }}</p>
+        </div>
+      </article>
+      {% empty %}
+      <div class="empty-state">لا توجد مشاريع منشورة حاليًا.</div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section nn-soft-section">
+  <div class="container">
+    <header class="section-heading split-heading"><div><span class="eyebrow">خدمات الحي</span><h2>الخدمات المتاحة داخل {{ city.name }}</h2></div><p>اختيار الخدمة يفتح صفحتها المحلية، وبعدها تقدر ترسل حي {{ district.name }} ضمن الطلب.</p></header>
+    <div class="nn-grid nn-grid-3">
+      {% for item in services %}
+      <article class="nn-card nn-service-card reveal">
+        {% if item.image %}<a class="nn-card-media" href="{{ item.url }}" aria-label="{{ item.name }} في حي {{ district.name }}">{% image_srcset item.image as srcset %}{% image_dimensions item.image as dimensions %}<img src="{{ item.image }}" {{ dimensions|safe }} {% if srcset %}srcset="{{ srcset }}" sizes="(max-width:640px) 100vw, 33vw"{% endif %} alt="{{ item.name }} في حي {{ district.name }}" loading="lazy" decoding="async"><span class="nn-media-badge">{{ item.category|default:"خدمة" }}</span></a>{% endif %}
+        <div class="nn-card-body">
+          <div class="nn-meta">{% if item.category %}<span class="nn-chip nn-chip-green">{{ item.category }}</span>{% endif %}<span class="nn-chip">حي {{ district.name }}</span></div>
+          <h3><a href="{{ item.url }}">{{ item.name }}</a></h3><p>{{ item.description|truncatechars:165 }}</p>
+          <div class="nn-card-footer"><span>{{ city.name }}</span><a class="nn-card-link" href="{{ item.url }}">تفاصيل الخدمة</a></div>
+        </div>
+      </article>
+      {% empty %}
+      <div class="empty-state">تظهر الخدمات بعد اكتمال تهيئة المحتوى.</div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <header class="section-heading split-heading"><div><span class="eyebrow">مقالات محلية</span><h2>أدلة مرتبطة بـ{{ city.name }} وأحيائها</h2></div><p>تغطي التوريد والزراعة والصيانة والري والشبوك بلغة عملية، مع ربط المدينة والحي والتصنيف والوسوم.</p></header>
+    <div class="nn-grid nn-grid-3">
+      {% for post in posts %}
+      <article class="nn-card nn-article-card reveal">
+        {% if post.image_url %}<a class="nn-card-media" href="{% url 'blog_detail' post.slug %}" aria-label="{{ post.title }}">{% image_srcset post.image_url as srcset %}{% image_dimensions post.image_url as dimensions %}<img src="{{ post.image_url }}" {{ dimensions|safe }} {% if srcset %}srcset="{{ srcset }}" sizes="(max-width:640px) 100vw, 33vw"{% endif %} alt="{{ post.title }}" loading="lazy" decoding="async"></a>{% endif %}
+        <div class="nn-card-body">
+          <div class="nn-meta">{% if post.category %}<span class="nn-chip nn-chip-green">{{ post.category.name }}</span>{% endif %}{% if post.district %}<span class="nn-chip">{{ post.district.name }}</span>{% endif %}</div>
+          <h3><a href="{% url 'blog_detail' post.slug %}">{{ post.title }}</a></h3>
+          <p>{{ post.excerpt|default:post.meta_description|truncatechars:165 }}</p>
+          <div class="nn-card-footer"><span>{% if post.reading_time_minutes %}{{ post.reading_time_minutes }} دقائق{% else %}دليل محلي{% endif %}</span><a class="nn-card-link" href="{% url 'blog_detail' post.slug %}">قراءة المقال</a></div>
+        </div>
+      </article>
+      {% empty %}
+      <div class="empty-state">تظهر المقالات المحلية بعد اكتمال التهيئة.</div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section nn-soft-section">
+  <div class="container nn-two-col">
+    <article class="nn-panel">
+      <span class="eyebrow">أحياء قريبة</span><h2>انتقل إلى حي آخر في {{ city.name }}</h2>
+      <div class="nn-district-grid" style="margin-top:20px;">
+        {% for item in nearby_districts %}<a class="nn-district-link" href="{{ item.url }}"><span>{{ item.name }}</span><small>عرض</small></a>{% empty %}<div class="empty-state">لا توجد أحياء أخرى مفعلة.</div>{% endfor %}
+      </div>
+    </article>
+    <aside class="nn-panel nn-sticky-panel"><span class="eyebrow">طلب مباشر</span><h2>أرسل موقعك في حي {{ district.name }}</h2><p>أرسل الصور ونوع الخدمة والمساحة التقريبية؛ ونراجع معك الحاجة للمعاينة.</p><a class="btn btn-whatsapp" href="{{ whatsapp_url }}?text={{ quote_message|urlencode }}" target="_blank" rel="noopener"><img src="{% static 'images/whatsapp.svg' %}" alt="" aria-hidden="true" decoding="async">إرسال عبر واتساب</a></aside>
+  </div>
+</section>
+{% endblock %}

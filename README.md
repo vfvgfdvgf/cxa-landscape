@@ -1,0 +1,82 @@
+# نخيل نجد — V6 Cinematic / Render Ready
+
+منصة إنتاج عربية لشركة نخيل ولاندسكيب، مبنية بواجهة **Next.js 16 / React 19** وواجهة خلفية **Django 5.2 LTS + Django REST Framework**، ومهيأة للنشر على Render وربط النطاق `getsiaq.online`.
+
+هذه النسخة تضيف هوية سينمائية أصلية خاصة بنخيل نجد: فيديو رئيسي كامل الشاشة، نظام بصري أسود/عاجي موحّد لكل الصفحات، حركة GSAP + Lenis، ومخطط تغطية تفاعلي بـHighcharts.
+
+## ما تحتويه النسخة النهائية
+
+- 250 خدمة وطنية منظمة، منها 50 خدمة محلية أساسية تستخدم لبناء صفحات المدن.
+- 12 مدينة نظامية و330 حيًا تشغيليًا.
+- 600 صفحة خدمة محلية (12 مدينة × 50 خدمة).
+- 93 سجل Portfolio مربوطًا بصور الأعمال الموردة مع عدم اختلاق موقع تنفيذ غير موثق.
+- 96 سجل «نموذج حل محلي» واضح الوصف و`noindex` لدعم التصفح المحلي بدون الادعاء بأنه مشروع منفذ في الحي.
+- 95 صورة أصلية/هيرو و458 مشتقًا Responsive بصيغ WebP/AVIF داخل `imge/`.
+- إدارة كاملة من Django Admin للصفحات، الصور، المشاريع، الخدمات، المدن، SEO، وإثبات ملكية الموقع.
+- دعم Google Search Console عبر HTML meta، HTML file، DNS TXT/CNAME، Google Analytics، وGoogle Tag Manager.
+- Cloudinary لتخزين الصور المرفوعة من لوحة الإدارة، مع أمر تشخيص صلاحية الرفع.
+- 6 فيديوهات إنتاجية محسنة ومختبرة، منها Hero أفقي مركب من ثلاث لقطات أصلية ونسخة مستقلة للجوال.
+- 11 صورة واتساب منظمة حسب النوع والجودة داخل `frontend/public/editorial/`، وتظهر الصور الأعلى دقة في معرض الصفحة الرئيسية.
+
+## أهم تحسينات الأداء
+
+- صور Responsive بأحجام 320/480/768/1200 واختيار AVIF/WebP حسب المتصفح.
+- عدم فك/قراءة كل صورة مشتقة عبر Pillow أثناء كل طلب API؛ يتم الاعتماد على أسماء المشتقات وفحص وجودها فقط.
+- تحويلات Cloudinary تلقائية `q_auto:eco` و`c_limit` للصور المرفوعة.
+- Payload أخف للبطاقات وصفحة البداية، ومنع تحميل محتوى المدن الكامل في الصفحة الرئيسية.
+- GZip لردود Django، وCache مناسب للوسائط، وLazy Loading لما تحت الشاشة.
+- الصفحة الرئيسية تعرض `portfolio` فقط كأعمال؛ سجلات الحلول المحلية لا تُعرض كمشاريع منفذة.
+- ربط داخلي بين خدمتي Next.js وDjango على شبكة Render الخاصة، مع فحص جاهزية حقيقي لقاعدة البيانات.
+- ترويسات Cache ثابتة للفيديوهات والصور، وتشغيل الفيديوهات الواقعة أسفل الشاشة عند اقترابها من مجال الرؤية فقط.
+- احترام `prefers-reduced-motion` وإيقاف الحركة والفيديو للمستخدم الذي يطلب تقليل المؤثرات.
+
+## متطلبات التشغيل
+
+- Python 3.12
+- Django `>=5.2.17,<5.3`
+- Node.js 22 LTS
+- PostgreSQL في الإنتاج
+- Cloudinary في الإنتاج للصور المرفوعة من لوحة الإدارة
+
+## أوامر الفحص الأساسية
+
+```bash
+python scripts/build_public_assets.py
+python scripts/static_audit.py
+python -m compileall -q core project manage.py scripts
+python manage.py makemigrations --check --dry-run
+python manage.py check
+```
+
+داخل `frontend/`:
+
+```bash
+npm ci --include=dev
+npm run typecheck
+npm run build
+```
+
+Render ينفذ فحوص Django وTypeScript والبناء تلقائيًا عند كل Deploy.
+
+## النشر السريع على Render
+
+ملف `render.yaml` ينشئ تلقائيًا قاعدة PostgreSQL وخدمة Django API وخدمة Next.js، ويربطها داخليًا. راجع `docs/DEPLOY_RENDER_FINAL_AR.md` للقيم السرية وخطوات النشر، و`docs/MEDIA_CATALOG_AR.md` لخريطة الوسائط.
+
+## بعد النشر
+
+من Render Shell للـBackend:
+
+```bash
+python manage.py check_cloudinary_storage
+python manage.py ensure_public_catalog
+```
+
+النتيجة المتوقعة للكتالوج:
+
+```text
+cities=12/12, services=250/250, portfolio=93/93, local=96/96, local_pages=600/600
+```
+
+إذا أعاد Cloudinary خطأ يتضمن `actions=["create"]` فالمشكلة في Role/صلاحية الـAPI key داخل Cloudinary، وليست في Django.
+
+راجع `docs/FINAL_RELEASE_V6_AR.md` لنتائج الفحص النهائي.

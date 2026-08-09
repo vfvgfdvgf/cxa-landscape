@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-hero compact-hero">
+    <div class="container narrow-container">
+        <span class="eyebrow">معلومات قانونية</span>
+        <h1>{{ legal_page.title }}</h1>
+        <p>{{ legal_page.description }}</p>
+    </div>
+</section>
+<section class="section">
+    <div class="container narrow-container legal-content">
+        {% for heading, body in legal_page.sections %}
+        <article class="content-card">
+            <h2>{{ heading }}</h2>
+            <p>{{ body }}</p>
+        </article>
+        {% endfor %}
+        <p class="legal-note">آخر تحديث: أغسطس 2026. هذه الصفحة معلومات عامة لتشغيل الموقع، ويُراجع النص قانونيًا بحسب نشاط الشركة والتزاماتها الفعلية.</p>
+    </div>
+</section>
+{% endblock %}

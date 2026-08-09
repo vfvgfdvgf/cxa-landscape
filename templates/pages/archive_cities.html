@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="page-hero compact">
+    <div class="container page-hero-shell">
+        <div>
+            <span class="eyebrow">المدن والأحياء</span>
+            <h1>{{ archive_title }}</h1>
+            <p>{{ archive_intro }}</p>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="archive-toolbar">
+            <a class="btn btn-outline" href="{% url 'archive_network' %}">شبكة الأرشفة</a>
+            <a class="btn btn-outline" href="{% url 'archive_services' %}">فهرس الخدمات</a>
+            <a class="btn btn-outline" href="{% url 'archive_articles' %}">فهرس المقالات</a>
+        </div>
+
+        <div class="archive-section">
+            <div class="section-heading">
+                <span class="eyebrow">المدن</span>
+                <h2>صفحات المدن الرئيسية</h2>
+            </div>
+            <div class="archive-link-grid">
+                {% for city in cities %}
+                <a href="{{ city.url }}"><span>{{ city.region|default:"مدينة" }}</span><strong>{{ city.title }}</strong></a>
+                {% endfor %}
+            </div>
+        </div>
+
+
+        <div class="archive-section">
+            <div class="section-heading">
+                <span class="eyebrow">الأحياء</span>
+                <h2>صفحات الأحياء والمشاريع المرتبطة بها</h2>
+            </div>
+            <div class="archive-link-grid dense">
+                {% for item in districts %}
+                <a href="{{ item.url }}"><span>{{ item.city }}</span><strong>حي {{ item.title }}</strong></a>
+                {% empty %}
+                <div class="empty-state">تظهر روابط الأحياء بعد تشغيل تهيئة المدن والأحياء.</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="archive-section">
+            <div class="section-heading">
+                <span class="eyebrow">خدمة داخل مدينة</span>
+                <h2>كل روابط الخدمات المحلية</h2>
+            </div>
+            <div class="archive-link-grid dense">
+                {% for item in city_services %}
+                <a href="{{ item.url }}"><span>{{ item.city }}</span><strong>{{ item.service }}</strong></a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

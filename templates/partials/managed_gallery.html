@@ -1,0 +1,19 @@
+{% load seo_images %}
+{% if images %}
+<section class="section media-section">
+    <div class="container">
+        <div class="media-grid">
+            {% for item in images %}
+            {% if item.image_url %}
+            <figure class="managed-media reveal">
+                {% image_srcset item.image_url as srcset %}
+                {% image_dimensions item.image_url as dimensions %}
+                <img decoding="async" src="{{ item.image_url }}" {{ dimensions|safe }} {% if srcset %}srcset="{{ srcset }}" sizes="(max-width: 720px) 100vw, 33vw"{% endif %} alt="{{ item.display_alt }}" loading="lazy">
+                <figcaption>{{ item.title }}</figcaption>
+            </figure>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}

@@ -1,0 +1,433 @@
+/* Nakheel Najd V4.3 — Arabic-first, open editorial layout, Saudi coverage map. */
+:root {
+  --nn43-paper: #f4f1ea;
+  --nn43-ink: #171814;
+  --nn43-muted: rgba(23, 24, 20, .60);
+  --nn43-green: #175642;
+  --nn43-green-dark: #0d3328;
+  --nn43-gold: #b68e53;
+  --nn43-line: rgba(23, 24, 20, .12);
+  --nn43-radius-media: 22px;
+}
+
+html {
+  direction: rtl;
+  text-align: start;
+  background: var(--nn43-paper);
+}
+body {
+  direction: rtl;
+  text-align: start;
+  background: var(--nn43-paper);
+  color: var(--nn43-ink);
+}
+main, #content, section, article, nav, form, input, select, textarea, button { direction: rtl; }
+input, select, textarea { text-align: right; }
+select { background-position: left 14px center; }
+
+/* Arabic-only navigation shell. */
+.nn-header-capsule {
+  grid-template-columns: minmax(190px, auto) 1fr auto;
+  padding-inline: 14px;
+}
+.nn-header-brand { justify-self: start; }
+.nn-header-tools { justify-self: end; }
+.nn-language-chip { display: none !important; }
+.nn-desktop-nav { direction: rtl; }
+.nn-overlay-toolbar {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  direction: rtl;
+}
+.nn-overlay-logo { grid-column: 1; margin: 0; justify-self: start; }
+.nn-overlay-search-shortcut { grid-column: 3; }
+.nn-overlay-close { grid-column: 4; }
+.nn-menu-layout,
+.nn-overlay-nav,
+.nn-menu-intro { direction: rtl; text-align: right; }
+.nn-overlay-nav a b { transform: none; }
+.nn-search-dialog {
+  display: flex;
+  flex-direction: row;
+  direction: rtl;
+  align-items: center;
+}
+.nn-global-search { order: 1; flex: 1; direction: rtl; }
+.nn-search-close { order: 2; flex: 0 0 auto; }
+
+/* Flat page language. */
+.page-home,
+.page-home #swup,
+.page-home #content,
+.page-home .nn-home-section,
+.page-home .nn-projects-stack-section,
+.page-home .nn-services-showcase,
+.page-home .nn-cities-map-section,
+.page-home .nn-home-gallery,
+.page-home .nn-home-articles,
+.page-home .nn-section-soft,
+.page-home .nn-section-dark {
+  background: var(--nn43-paper) !important;
+}
+.page-home .nn-home-section { padding-block: clamp(70px, 9vw, 126px); }
+.page-home .nn-home-section + .nn-home-section { border-top: 1px solid var(--nn43-line); }
+.page-home .nn-section-minihead {
+  min-height: 0;
+  padding: 0 0 clamp(26px, 4vw, 48px);
+  margin: 0;
+  border: 0;
+}
+.page-home .nn-section-minihead h2 {
+  margin: 0;
+  color: var(--nn43-ink);
+  font-size: clamp(1.75rem, 3.4vw, 3.6rem);
+  line-height: 1;
+  letter-spacing: -.045em;
+}
+.page-home .nn-section-end { padding-top: clamp(24px, 4vw, 42px); }
+.nn-text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  color: var(--nn43-ink);
+  font-weight: 800;
+  border-bottom: 1px solid currentColor;
+}
+.nn-text-link span { color: var(--nn43-green); transition: transform .2s ease; }
+.nn-text-link:hover span { transform: translateX(-4px); }
+
+/* Hero and moving line remain the only full-bleed visual layers. */
+.nn-home-hero { background: #0d231b; }
+.nn-brand-marquee {
+  background: var(--nn43-paper) !important;
+  border-bottom: 1px solid var(--nn43-line);
+  direction: rtl;
+}
+.nn-brand-marquee-track { direction: rtl; }
+.nn-brand-marquee-group { direction: rtl; }
+
+/* Projects: image-led, no backing card shell. */
+.nn-project-panel {
+  box-shadow: none !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+.nn-project-panel-content { direction: rtl; text-align: right; }
+.nn-project-panel .nn-meta { justify-content: flex-start; }
+
+/* Services: pure image panels, no floating white card backgrounds. */
+.nn-services-showcase { overflow: clip; }
+.nn-services-stage { direction: rtl; }
+.nn-services-track {
+  direction: rtl !important;
+  flex-direction: row;
+  transform-origin: right center;
+}
+.nn-service-slide { direction: rtl !important; }
+.nn-service-slide > a {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  border-radius: var(--nn43-radius-media);
+}
+.nn-service-slide-copy { text-align: right; }
+
+/* Accurate Saudi outline and city positions. */
+.nn-cities-map-section { background: var(--nn43-paper) !important; }
+.nn-saudi-map-layout {
+  grid-template-columns: minmax(0, 1.35fr) minmax(270px, .65fr);
+  align-items: center;
+}
+.nn-saudi-map {
+  position: relative;
+  min-height: 0 !important;
+  aspect-ratio: 900 / 650;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  overflow: visible !important;
+}
+.nn-saudi-map-shape {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0 !important;
+  object-fit: contain;
+  filter: none !important;
+  transform: none !important;
+}
+.nn-map-city {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  direction: rtl;
+  color: var(--nn43-ink);
+  transform: translate(-50%, -50%);
+  font-size: .68rem;
+  font-weight: 900;
+  white-space: nowrap;
+  z-index: 2;
+}
+.nn-map-city i {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid var(--nn43-gold);
+  box-shadow: 0 0 0 5px rgba(182, 142, 83, .15);
+}
+.nn-map-city span {
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: rgba(244, 241, 234, .94);
+  border: 1px solid rgba(23, 24, 20, .08);
+  box-shadow: none;
+}
+.nn-map-city:hover i,
+.nn-map-city:focus-visible i { transform: scale(1.28); }
+.nn-map-city-riyadh { --x: 56.20%; --y: 47.42%; }
+.nn-map-city-jeddah { --x: 25.81%; --y: 65.57%; }
+.nn-map-city-makkah { --x: 28.51%; --y: 66.11%; }
+.nn-map-city-madinah { --x: 27.34%; --y: 48.48%; }
+.nn-map-city-qassim { --x: 45.26%; --y: 38.16%; }
+.nn-map-city-dammam { --x: 70.06%; --y: 37.82%; }
+.nn-map-city-khobar { --x: 70.50%; --y: 38.96%; }
+.nn-map-city-abha { --x: 39.26%; --y: 83.95%; }
+.nn-map-city-jazan { --x: 39.45%; --y: 91.42%; }
+.nn-map-city-taif { --x: 30.77%; --y: 66.78%; }
+.nn-map-city-tabuk { --x: 15.14%; --y: 26.78%; }
+.nn-map-city-hail { --x: 36.07%; --y: 31.68%; }
+.nn-map-city-dammam span { transform: translateY(-18px); }
+.nn-map-city-khobar span { transform: translateY(18px); }
+.nn-map-city-jeddah span { transform: translate(-12px, 16px); }
+.nn-map-city-makkah span { transform: translate(12px, -16px); }
+.nn-map-city-taif span { transform: translate(20px, 16px); }
+.nn-map-city-abha span { transform: translate(-14px, -15px); }
+.nn-map-city-jazan span { transform: translate(15px, 14px); }
+.nn-map-copy { direction: rtl; text-align: right; }
+.nn-map-summary {
+  max-width: 30ch;
+  margin: 0 0 22px;
+  color: var(--nn43-muted);
+  font-size: 1rem;
+  line-height: 1.8;
+}
+.nn-map-city-list {
+  margin: 0;
+  border-top: 1px solid var(--nn43-line);
+}
+.nn-map-city-list a {
+  color: var(--nn43-ink);
+  background: transparent;
+}
+.nn-map-source {
+  display: inline-block;
+  margin-top: 16px;
+  color: var(--nn43-muted);
+  font-size: .68rem;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+/* Gallery without section panel. */
+.nn-home-gallery { color: var(--nn43-ink); }
+.nn-home-gallery .nn-gallery-item {
+  background: transparent;
+  box-shadow: none;
+  border: 0;
+}
+.nn-home-gallery .nn-gallery-item img { border-radius: var(--nn43-radius-media); }
+
+/* Open editorial cards site-wide. */
+.nn-card,
+.nn-service-card-v4,
+.nn-article-card,
+.nn-article-card-v42,
+.nn-article-card-v43,
+.nn-city-card,
+.nn-city-card-v4,
+.service-card,
+.city-card,
+.content-card,
+.nn-panel,
+.nn-taxonomy,
+.nn-search {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+}
+.nn-card { overflow: visible; }
+.nn-card-media {
+  display: block;
+  overflow: hidden;
+  border-radius: var(--nn43-radius-media) !important;
+  background: rgba(23, 24, 20, .05);
+}
+.nn-card-media img { border-radius: 0 !important; }
+.nn-card-body {
+  min-height: 0 !important;
+  padding: 18px 0 0 !important;
+  text-align: right;
+}
+.nn-card-body h3 { margin: 10px 0 9px; }
+.nn-card-body p { color: var(--nn43-muted); }
+.nn-card-footer,
+.nn-card-actions { padding-inline: 0; }
+.nn-card-link {
+  width: fit-content;
+  margin-top: auto;
+  padding-top: 12px;
+  color: var(--nn43-ink);
+  border-bottom: 1px solid rgba(23, 24, 20, .40);
+}
+.nn-card-link::after { content: "←"; }
+.nn-meta { direction: rtl; justify-content: flex-start; }
+.nn-meta span,
+.nn-chip,
+.nn-chip-green {
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: var(--nn43-muted) !important;
+  box-shadow: none !important;
+}
+.nn-meta span + span::before { content: "·"; margin-inline: 7px; }
+.nn-article-card-v43 .nn-card-media { aspect-ratio: 16 / 10; }
+.nn-article-card-v43 .nn-card-media img { width: 100%; height: 100%; object-fit: cover; }
+.nn-article-card-v43 h3 { font-size: clamp(1.25rem, 2vw, 1.7rem); line-height: 1.25; }
+.nn-article-card-v43 p {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.nn-city-card,
+.nn-city-card-v4,
+.nn-service-card {
+  padding: 0 0 22px !important;
+  border-bottom: 1px solid var(--nn43-line) !important;
+}
+.nn-city-card::before,
+.nn-panel::before { display: none !important; }
+.nn-panel,
+.content-card,
+.nn-taxonomy,
+.nn-search {
+  padding: 24px 0 !important;
+  border-top: 1px solid var(--nn43-line) !important;
+}
+.quote-form.nn-panel { background: transparent !important; }
+.quote-form input,
+.quote-form select,
+.quote-form textarea,
+.nn-search input,
+.content-card input,
+.content-card select,
+.content-card textarea {
+  background: rgba(255, 255, 255, .35) !important;
+  border: 1px solid var(--nn43-line) !important;
+  box-shadow: none !important;
+}
+.nn-page-hero-shell {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--nn43-line) !important;
+  border-radius: 0 !important;
+  padding-inline: 0 !important;
+}
+.empty-state {
+  background: transparent !important;
+  border: 1px dashed rgba(23, 24, 20, .22) !important;
+  box-shadow: none !important;
+}
+
+/* Remove decorative card shells from the public experience. */
+.page-hero-shell,
+.article-shell,
+.calculator-card,
+.accent-card,
+.cta-box,
+.nn-project-card,
+.comparison-grid > *,
+.archive-list > *,
+.archive-link-grid > * {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+.page-hero-shell,
+.article-shell {
+  border-bottom: 1px solid var(--nn43-line) !important;
+}
+.nn-project-card {
+  overflow: visible !important;
+}
+.nn-project-card img {
+  border-radius: var(--nn43-radius-media) !important;
+}
+.calculator-card,
+.accent-card,
+.cta-box {
+  padding-inline: 0 !important;
+}
+
+/* RTL-safe physical exceptions. */
+.nn-hero-scroll { inset-inline-start: 50%; }
+.nn-hero-scroll span { left: 50%; }
+.nn-services-track { direction: rtl !important; }
+.nn-service-slide { direction: rtl !important; }
+
+@media (max-width: 1060px) {
+  .nn-saudi-map-layout { grid-template-columns: 1fr; }
+  .nn-map-copy { max-width: none; }
+  .nn-map-summary { max-width: 44ch; }
+}
+
+@media (max-width: 820px) {
+  .nn-header-capsule {
+    grid-template-columns: 1fr auto;
+    padding-inline: 8px 11px;
+  }
+  .nn-header-brand { grid-column: 2; justify-self: end; }
+  .nn-header-tools { grid-column: 1; justify-self: start; }
+  .nn-overlay-toolbar { grid-template-columns: auto 1fr auto auto; }
+  .nn-overlay-logo { grid-column: 1; }
+  .nn-overlay-search-shortcut { grid-column: 3; }
+  .nn-overlay-close { grid-column: 4; }
+  .nn-search-dialog { direction: rtl; }
+  .page-home .nn-home-section { padding-block: 58px; }
+  .page-home .nn-section-minihead { padding-bottom: 24px; }
+  .page-home .nn-section-minihead h2 { font-size: clamp(1.65rem, 7.6vw, 2.5rem); }
+  .nn-service-slide > a { box-shadow: none !important; }
+  .nn-saudi-map { width: min(100%, 620px); margin-inline: auto; }
+  .nn-map-city { font-size: .56rem; }
+  .nn-map-city span { padding: 3px 5px; }
+  .nn-map-city i { width: 8px; height: 8px; border-width: 2px; box-shadow: 0 0 0 3px rgba(182, 142, 83, .14); }
+  .nn-map-city-list { grid-template-columns: 1fr 1fr; }
+  .nn-grid-3.nn-article-grid { grid-template-columns: 1fr; gap: 42px; }
+  .nn-card-body { padding-top: 14px !important; }
+  .nn-panel, .content-card, .nn-taxonomy, .nn-search { padding-block: 18px !important; }
+}
+
+@media (max-width: 520px) {
+  .nn-map-city span { display: none; }
+  .nn-map-city:hover span,
+  .nn-map-city:focus-visible span {
+    display: inline-flex;
+    position: absolute;
+    inset-inline-start: 12px;
+    bottom: 12px;
+    transform: none;
+  }
+  .nn-map-city-list { grid-template-columns: 1fr; }
+  .nn-brand-marquee span { font-size: clamp(3rem, 18vw, 5rem); }
+}

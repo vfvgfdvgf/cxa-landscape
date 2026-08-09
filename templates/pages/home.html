@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% load static seo_images %}
+{% block extra_head %}
+{% image_srcset hero_mobile.image_url as preload_mobile_srcset %}
+{% image_srcset hero_desktop.image_url as preload_desktop_srcset %}
+<link rel="preload" as="image" href="{{ hero_mobile.image_url }}"{% if preload_mobile_srcset %} imagesrcset="{{ preload_mobile_srcset }}" imagesizes="100vw"{% endif %} media="(max-width: 820px)" fetchpriority="high">
+<link rel="preload" as="image" href="{{ hero_desktop.image_url }}"{% if preload_desktop_srcset %} imagesrcset="{{ preload_desktop_srcset }}" imagesizes="100vw"{% endif %} media="(min-width: 821px)" fetchpriority="high">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"LocalBusiness","name":"{{ site_name|escapejs }}","telephone":"{{ contact_phone|escapejs }}","url":"{{ seo.canonical|escapejs }}","areaServed":"المملكة العربية السعودية","serviceType":["توريد وزراعة النخيل","تنسيق وصيانة الحدائق","شبكات الري","الشبوك والسياجات"]}</script>
+{% endblock %}
+{% block content %}
+<section class="nn-home-hero" aria-labelledby="home-hero-title">
+  <picture class="nn-home-hero-media" aria-hidden="true">
+    {% image_srcset hero_mobile.image_url as mobile_srcset %}{% image_srcset hero_desktop.image_url as desktop_srcset %}
+    <source media="(max-width:820px)" srcset="{% if mobile_srcset %}{{ mobile_srcset }}{% else %}{{ hero_mobile.image_url }}{% endif %}" sizes="100vw">
+    <img src="{{ hero_desktop.image_url }}" {% if desktop_srcset %}srcset="{{ desktop_srcset }}" sizes="100vw"{% endif %} alt="" loading="eager" fetchpriority="high" decoding="async">
+  </picture>
+  <div class="nn-home-hero-shade" aria-hidden="true"></div>
+  <div class="container nn-home-hero-inner">
+    <h1 id="home-hero-title" class="sr-only">{{ hero_title }}</h1>
+    <div class="nn-home-hero-minimal reveal">
+      <strong>نخيل نجد</strong>
+      <span>توريد · زراعة · صيانة</span>
+      <a class="btn btn-whatsapp" href="{{ whatsapp_url }}" target="_blank" rel="noopener"><img src="{% static 'images/whatsapp.svg' %}" alt="" aria-hidden="true" decoding="async">اطلب معاينة</a>
+    </div>
+  </div>
+  <a class="nn-hero-scroll" href="#home-marquee" aria-label="الانتقال إلى المحتوى"><span></span></a>
+</section>
+<section id="home-marquee" class="nn-brand-marquee" aria-label="خدمات نخيل نجد">
+  <div class="nn-brand-marquee-track">
+    <div class="nn-brand-marquee-group"><span>توريد</span><b>✦</b><span>زراعة</span><b>✦</b><span>صيانة</span><b>✦</b><span>نخيل</span><b>✦</b><span>لاندسكيب</span><b>✦</b><span>شبوك</span><b>✦</b></div>
+    <div class="nn-brand-marquee-group" aria-hidden="true"><span>توريد</span><b>✦</b><span>زراعة</span><b>✦</b><span>صيانة</span><b>✦</b><span>نخيل</span><b>✦</b><span>لاندسكيب</span><b>✦</b><span>شبوك</span><b>✦</b></div>
+  </div>
+</section>
+
+<section id="home-projects" class="nn-projects-stack-section nn-home-section">
+  <div class="container nn-section-minihead"><h2>مشاريع مختارة</h2></div>
+  <div class="container nn-projects-stack" data-project-stack>
+    {% for item in portfolio_items|slice:":4" %}
+    <article class="nn-project-panel" data-project-panel style="--panel-index:{{ forloop.counter0 }}">
+      {% image_srcset item.image_url as srcset %}{% image_dimensions item.image_url as dimensions %}
+      <img class="nn-project-panel-image" src="{{ item.image_url }}" {{ dimensions|safe }} {% if srcset %}srcset="{{ srcset }}" sizes="100vw"{% endif %} alt="{{ item.title }}" loading="lazy" decoding="async">
+      <div class="nn-project-panel-shade"></div>
+      <div class="nn-project-panel-content">
+        <span class="nn-project-number">0{{ forloop.counter }}</span>
+        <div><div class="nn-meta"><span>{{ item.category }}</span>{% if item.city %}<span>{{ item.city }}{% if item.district %} · {{ item.district }}{% endif %}</span>{% endif %}</div><h3>{{ item.title }}</h3><p>{{ item.description|default:"مشروع منفذ ضمن خدمات نخيل نجد."|truncatechars:100 }}</p></div>
+      </div>
+    </article>
+    {% empty %}<div class="empty-state">تظهر المشاريع بعد إضافتها.</div>{% endfor %}
+  </div>
+  <div class="container nn-section-end"><a class="nn-text-link" href="{% url 'portfolio' %}">عرض كل المشاريع <span>←</span></a></div>
+</section>
+
+<section class="nn-services-showcase nn-home-section" data-services-showcase>
+  <div class="container nn-section-minihead"><h2>خدماتنا</h2></div>
+  <div class="nn-services-stage" data-services-stage>
+    <div class="nn-services-track" data-services-track>
+      {% for service in services|slice:":8" %}
+      <article class="nn-service-slide">
+        <a href="{% url 'service_detail' service.slug %}" aria-label="{{ service.name }}">
+          {% if service.image %}{% image_srcset service.image as srcset %}{% image_dimensions service.image as dimensions %}<img src="{{ service.image }}" {{ dimensions|safe }} {% if srcset %}srcset="{{ srcset }}" sizes="(max-width:900px) 82vw, 34vw"{% endif %} alt="{{ service.name }}" loading="lazy" decoding="async">{% endif %}
+          <div class="nn-service-slide-shade"></div>
+          <div class="nn-service-slide-copy"><span>{{ forloop.counter|stringformat:"02d" }}</span><h3>{{ service.name }}</h3><p>{{ service.description|truncatechars:90 }}</p><b>تفاصيل الخدمة ←</b></div>
+        </a>
+      </article>
+      {% empty %}<div class="empty-state">تظهر الخدمات بعد اكتمال التهيئة.</div>{% endfor %}
+    </div>
+  </div>
+  <div class="container nn-section-end"><a class="nn-text-link" href="{% url 'services' %}">جميع الخدمات <span>←</span></a></div>
+</section>
+
+<section class="nn-cities-map-section nn-home-section">
+  <div class="container nn-section-minihead"><h2>مدن التغطية</h2></div>
+  <div class="container nn-saudi-map-layout">
+    <div class="nn-saudi-map" aria-label="خريطة مدن نخيل نجد">
+      <img class="nn-saudi-map-shape" src="{% static 'images/saudi-arabia-outline.svg' %}" alt="خريطة المملكة العربية السعودية" loading="lazy" decoding="async">
+      {% for city in featured_cities %}<a class="nn-map-city nn-map-city-{{ city.slug }}" href="{% url 'city_detail' city.slug %}" aria-label="خدمات {{ city.name }}"><i></i><span>{{ city.name }}</span></a>{% endfor %}
+    </div>
+    <div class="nn-map-copy">
+      <p class="nn-map-summary">اختر المدينة للوصول إلى خدماتها ومشاريعها وأحيائها.</p>
+      <div class="nn-map-city-list">{% for city in featured_cities %}<a href="{% url 'city_detail' city.slug %}">{{ city.name }}<span>←</span></a>{% endfor %}</div>
+      <a class="nn-map-source" href="https://www.geosa.gov.sa/ar/Pages/default.aspx" target="_blank" rel="noopener noreferrer nofollow">مرجع حدود المملكة: المنصة الجيومكانية الوطنية</a>
+    </div>
+  </div>
+</section>
+
+<section class="nn-home-gallery nn-home-section">
+  <div class="container nn-section-minihead"><h2>من التنفيذ</h2></div>
+  <div class="container nn-gallery-v4">{% for item in portfolio_items|slice:"4:12" %}<figure class="nn-gallery-item">{% image_srcset item.image_url as srcset %}{% image_dimensions item.image_url as dimensions %}<img src="{{ item.image_url }}" {{ dimensions|safe }} {% if srcset %}srcset="{{ srcset }}" sizes="(max-width:640px) 50vw, 25vw"{% endif %} alt="{{ item.title }}" loading="lazy" decoding="async"><figcaption>{{ item.title }}</figcaption></figure>{% endfor %}</div>
+</section>
+
+<section class="nn-home-articles nn-home-section">
+  <div class="container nn-section-minihead"><h2>مقالات</h2></div>
+  <div class="container nn-grid nn-grid-3 nn-article-grid">
+    {% for post in latest_posts|slice:":3" %}<article class="nn-card nn-article-card nn-article-card-v43 reveal">{% if post.image_url %}<a class="nn-card-media" href="{% url 'blog_detail' post.slug %}">{% image_srcset post.image_url as srcset %}{% image_dimensions post.image_url as dimensions %}<img src="{{ post.image_url }}" {{ dimensions|safe }} {% if srcset %}srcset="{{ srcset }}" sizes="(max-width:640px) 100vw, 33vw"{% endif %} alt="{{ post.title }}" loading="lazy" decoding="async"></a>{% endif %}<div class="nn-card-body"><div class="nn-meta">{% if post.category %}<span>{{ post.category.name }}</span>{% endif %}{% if post.city %}<span>{{ post.city.name }}</span>{% endif %}</div><h3><a href="{% url 'blog_detail' post.slug %}">{{ post.title }}</a></h3><p>{% firstof post.excerpt post.meta_description post.intro %}</p><a class="nn-card-link" href="{% url 'blog_detail' post.slug %}">قراءة المقال</a></div></article>{% empty %}<div class="empty-state">تظهر المقالات بعد اكتمال التهيئة.</div>{% endfor %}
+  </div>
+  <div class="container nn-section-end"><a class="nn-text-link" href="{% url 'blog' %}">جميع المقالات <span>←</span></a></div>
+</section>
+{% endblock %}

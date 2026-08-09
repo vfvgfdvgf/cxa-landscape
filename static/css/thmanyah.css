@@ -1,0 +1,79 @@
+/* Thmanyah type system. Run scripts/install_thmanyah_fonts.py with the owner-supplied ZIP. */
+@font-face {
+  font-family: "Thmanyah Sans";
+  src: url("../fonts/thmanyah/thmanyahsans-Light.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Thmanyah Sans";
+  src: url("../fonts/thmanyah/thmanyahsans-Regular.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Thmanyah Sans";
+  src: url("../fonts/thmanyah/thmanyahsans-Medium.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 500 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Thmanyah Sans";
+  src: url("../fonts/thmanyah/thmanyahsans-Bold.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 700 800;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Thmanyah Sans";
+  src: url("../fonts/thmanyah/thmanyahsans-Black.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Thmanyah Serif Display";
+  src: url("../fonts/thmanyah/thmanyahserifdisplay-Regular.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Thmanyah Serif Display";
+  src: url("../fonts/thmanyah/thmanyahserifdisplay-Bold.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 700 800;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Thmanyah Serif Display";
+  src: url("../fonts/thmanyah/thmanyahserifdisplay-Black.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Thmanyah Serif Text";
+  src: url("../fonts/thmanyah/thmanyahseriftext-Regular.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Thmanyah Serif Text";
+  src: url("../fonts/thmanyah/thmanyahseriftext-Bold.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+:root {
+  --font-ui: "Thmanyah Sans", "Tahoma", "Arial", sans-serif;
+  --font-display: "Thmanyah Serif Display", "Thmanyah Sans", "Tahoma", sans-serif;
+  --font-reading: "Thmanyah Serif Text", "Thmanyah Sans", "Tahoma", sans-serif;
+}
+html, body, button, input, select, textarea { font-family: var(--font-ui); }
+h1, h2, .display-title, .nn-brand-marquee { font-family: var(--font-display); }
+.article-content, .article-main { font-family: var(--font-reading); }

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="page-hero compact">
+    <div class="container">
+        <span class="eyebrow">صفحة مخصصة</span>
+        <h1>{{ page_obj.hero_title|default:page_obj.title }}</h1>
+        <p>{{ page_obj.intro_text }}</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <article class="content-card">
+            <h2>{{ page_obj.title }}</h2>
+            <div>{{ page_obj.body|linebreaks }}</div>
+        </article>
+    </div>
+</section>
+
+{% include "partials/managed_gallery.html" with images=page_images %}
+{% endblock %}

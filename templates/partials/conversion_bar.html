@@ -1,0 +1,29 @@
+{% load static %}
+<aside class="conversion-bar" aria-label="طلب معاينة الموقع">
+    <div class="conversion-copy">
+        <strong>معاينة الموقع</strong>
+        <span>حدد المدينة والخدمة ثم أرسل الطلب.</span>
+    </div>
+    <form class="conversion-mini-form" data-whatsapp="{{ whatsapp_url }}" data-lead-url="{% url 'capture_lead' %}">
+        <div class="website-field" aria-hidden="true"><label>الموقع<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+        <select name="city" data-location-city aria-label="المدينة">
+            <option value="">المدينة</option>
+            {% for city in location_options %}<option value="{{ city.name }}">{{ city.name }}</option>{% endfor %}
+        </select>
+        <select name="district" data-location-district aria-label="الحي" disabled>
+            <option value="">الحي</option>
+        </select>
+        <select name="service" aria-label="الخدمة">
+            <option value="">الخدمة</option>
+            <option>توريد نخيل عربي</option>
+            <option>توريد نخيل واشنطني أو ملوكي</option>
+            <option>صيانة نخيل وحدائق</option>
+            <option>لاندسكيب وشبكات ري</option>
+            <option>شبوك وسياجات</option>
+        </select>
+        <button class="conversion-whatsapp" type="submit" aria-label="إرسال الطلب عبر واتساب">
+            <img src="{% static 'images/whatsapp.svg' %}" alt="" aria-hidden="true" decoding="async">
+            <span>إرسال</span>
+        </button>
+    </form>
+</aside>

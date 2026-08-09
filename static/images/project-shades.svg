@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480">
+  <rect width="640" height="480" fill="#f3eadb"/>
+  <rect x="60" y="210" width="520" height="160" rx="28" fill="#d0b07a"/>
+  <rect x="110" y="120" width="420" height="110" rx="28" fill="#83643b"/>
+  <rect x="120" y="230" width="16" height="120" fill="#614824"/>
+  <rect x="504" y="230" width="16" height="120" fill="#614824"/>
+  <text x="320" y="420" font-size="34" text-anchor="middle" fill="#614824" font-family="Segoe UI">Car Shades</text>
+</svg>

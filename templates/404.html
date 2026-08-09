@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="page-hero compact">
+    <div class="container">
+        <div class="content-card" style="text-align:center;">
+            <span class="eyebrow">404</span>
+            <h1>الصفحة غير موجودة</h1>
+            <p>الرابط المطلوب غير متوفر حاليًا. يمكنك العودة إلى الصفحة الرئيسية أو متابعة تصفح الخدمات والمشاريع.</p>
+            <div class="hero-actions" style="justify-content:center;">
+                <a class="btn btn-primary" href="{% url 'home' %}">العودة للرئيسية</a>
+                <a class="btn btn-soft" href="{% url 'services' %}">تصفح الخدمات</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

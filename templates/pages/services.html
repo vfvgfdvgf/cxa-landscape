@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% load seo_images %}
+
+{% block content %}
+<section class="nn-page-hero">
+  <div class="container nn-page-hero-shell">
+    <div>
+      <nav class="nn-breadcrumb"><a href="{% url 'home' %}">الرئيسية</a><span>/</span><span>الخدمات</span></nav>
+      <span class="eyebrow">خدمات نخيل نجد</span>
+      <h1>توريد وزراعة وصيانة للمساحات الخارجية</h1>
+      <p>خدمات مرتبة تشمل النخيل العربي والواشنطني والملوكي، الحدائق واللاندسكيب، شبكات الري، والشبوك والسياجات. اختر الخدمة ثم المدينة للحصول على صفحة محلية واضحة.</p>
+    </div>
+    {% with hero_image=page_images|first %}
+    {% if hero_image %}
+    <figure class="nn-page-hero-visual">
+      {% image_srcset hero_image.image_url as srcset %}
+      {% image_dimensions hero_image.image_url as dimensions %}
+      <img src="{{ hero_image.image_url }}" {{ dimensions|safe }} {% if srcset %}srcset="{{ srcset }}" sizes="(max-width: 820px) 100vw, 42vw"{% endif %} alt="خدمات نخيل نجد" loading="eager" fetchpriority="high" decoding="async">
+    </figure>
+    {% endif %}
+    {% endwith %}
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    {% regroup services by category as grouped_services %}
+    <div class="nn-service-groups">
+      {% for group in grouped_services %}
+      <section class="nn-service-group" id="category-{{ forloop.counter }}">
+        <div class="nn-service-group-head"><h2>{{ group.grouper|default:"خدمات متنوعة" }}</h2><span>{{ group.list|length }} خدمة</span></div>
+        <div class="nn-grid nn-grid-3">
+          {% for service in group.list %}
+          <article class="nn-card nn-service-card reveal" id="{{ service.slug }}">
+            {% if service.image %}
+            <a class="nn-card-media" href="{% url 'service_detail' service.slug %}" aria-label="{{ service.name }}">
+              {% image_srcset service.image as srcset %}
+              {% image_dimensions service.image as dimensions %}
+              <img src="{{ service.image }}" {{ dimensions|safe }} {% if srcset %}srcset="{{ srcset }}" sizes="(max-width: 640px) 100vw, 33vw"{% endif %} alt="{{ service.name }}" loading="lazy" decoding="async">
+              <span class="nn-media-badge">{{ service.category|default:"خدمة" }}</span>
+            </a>
+            {% endif %}
+            <div class="nn-card-body">
+              <div class="nn-meta">{% if service.primary_city %}<span class="nn-chip">{{ service.primary_city }}{% if service.primary_district %} · {{ service.primary_district }}{% endif %}</span>{% else %}<span class="nn-chip">جميع مناطق التغطية</span>{% endif %}</div>
+              <h3><a href="{% url 'service_detail' service.slug %}">{{ service.name }}</a></h3>
+              <p>{{ service.description|truncatechars:160 }}</p>
+              <div class="nn-card-footer"><span>{{ service.category|default:"خدمة ميدانية" }}</span><a class="nn-card-link" href="{% url 'service_detail' service.slug %}">التفاصيل</a></div>
+            </div>
+          </article>
+          {% endfor %}
+        </div>
+      </section>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section nn-soft-section">
+  <div class="container nn-two-col">
+    <article class="nn-panel">
+      <span class="eyebrow">اختيار الخدمة</span><h2>الموقع يحدد التفاصيل الفنية</h2>
+      <p>المقاس والعدد، نوع التربة والصرف، ضغط المياه، التعرض للشمس والرياح، ومتطلبات البلدية كلها تؤثر في الاختيار النهائي. لذلك تكون المعلومات المنشورة نقطة بداية، والمعاينة تحدد نطاق التنفيذ.</p>
+      <div class="nn-grid nn-grid-3" style="margin-top:22px;"><div><span class="nn-chip nn-chip-green">1</span><h3>المدينة والحي</h3><p>لتحديد التغطية وطبيعة الموقع.</p></div><div><span class="nn-chip nn-chip-green">2</span><h3>الصور والمقاسات</h3><p>لتقدير التوريد والمعدات والخامات.</p></div><div><span class="nn-chip nn-chip-green">3</span><h3>المعاينة</h3><p>للتأكد من التربة والري والتثبيت.</p></div></div>
+    </article>
+    <aside class="nn-panel nn-sticky-panel"><span class="eyebrow">التغطية</span><h2>اختر مدينتك</h2><p>كل مدينة تحتوي 50 صفحة خدمة، وصفحات مستقلة للأحياء والمشاريع المحلية.</p><a class="btn btn-primary" href="{% url 'cities' %}">المدن والأحياء</a></aside>
+  </div>
+</section>
+{% endblock %}

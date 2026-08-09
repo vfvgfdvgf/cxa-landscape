@@ -1,0 +1,62 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    {% for verification in site_verifications %}
+        {% if verification.verification_method == "html_tag" and verification.name and verification.content %}
+            <meta name="{{ verification.name }}" content="{{ verification.content }}">
+        {% endif %}
+    {% endfor %}
+    <title>{{ seo.title }}</title>
+    <meta name="description" content="{{ seo.description|default:seo_default_description }}">
+    <meta name="author" content="{{ site_name }}">
+    {% if seo.keywords or seo_default_keywords %}<meta name="keywords" content="{{ seo.keywords|default:seo_default_keywords }}">{% endif %}
+    <meta name="robots" content="{{ seo.robots|default:'index, follow, max-image-preview:large' }}">
+    <meta name="format-detection" content="telephone=no">
+    <link rel="canonical" href="{{ seo.canonical }}">
+    {% if seo.prev_url %}<link rel="prev" href="{{ seo.prev_url }}">{% endif %}
+    {% if seo.next_url %}<link rel="next" href="{{ seo.next_url }}">{% endif %}
+    <link rel="alternate" hreflang="ar-SA" href="{{ seo.canonical }}">
+    <link rel="alternate" hreflang="x-default" href="{{ seo.canonical }}">
+    <link rel="sitemap" type="application/xml" href="{% url 'sitemap_xml' %}">
+    <link rel="contents" href="{% url 'archive_network' %}">
+    <link rel="icon" type="image/svg+xml" href="{% static 'images/favicon.svg' %}">
+    <meta property="og:title" content="{{ seo.title }}">
+    <meta property="og:site_name" content="{{ site_name }}">
+    <meta property="og:description" content="{{ seo.description|default:seo_default_description }}">
+    <meta property="og:type" content="{{ seo.og_type|default:'website' }}">
+    <meta property="og:url" content="{{ seo.canonical }}">
+    <meta property="og:locale" content="ar_SA">
+    {% if seo.image or seo_default_og_image %}<meta property="og:image" content="{{ seo.image|default:seo_default_og_image }}">{% endif %}
+    <meta property="og:image:alt" content="{{ seo.title }}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ seo.title }}">
+    <meta name="twitter:description" content="{{ seo.description|default:seo_default_description }}">
+    {% if seo.image or seo_default_og_image %}<meta name="twitter:image" content="{{ seo.image|default:seo_default_og_image }}">{% endif %}
+    {% if seo_twitter_handle %}<meta name="twitter:site" content="{{ seo_twitter_handle }}">{% endif %}
+    <meta name="theme-color" content="{{ site_settings_obj.primary_color|default:'#83643b' }}">
+    <link rel="stylesheet" href="{% static 'css/site-v4-4.css' %}">
+    <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/ScrollTrigger.min.js" crossorigin="anonymous"></script>
+    <script defer src="{% static 'js/site-v4-4.js' %}"></script>
+    <script type="application/ld+json">{{ organization_schema_json|safe }}</script>
+    {% if seo.schema_json %}<script type="application/ld+json">{{ seo.schema_json|safe }}</script>{% endif %}
+    <script id="location-options-data" type="application/json">{{ location_options_json|default:'[]'|safe }}</script>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="rtl{% if request.resolver_match.url_name == 'home' %} page-home{% endif %}" style="{{ theme_css_vars }}" data-track-url="{% url 'track_conversion' %}">
+    <a class="skip-link" href="#content">تخط إلى المحتوى</a>
+    <div class="navigation-progress" aria-hidden="true"><span></span></div>
+    <form id="csrf-seed" hidden>{% csrf_token %}</form>
+    {% include "partials/header.html" %}
+    <main id="swup" class="transition-fade" tabindex="-1">
+        <div id="content" data-theme-vars="{{ theme_css_vars }}">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+    {% include "partials/footer.html" %}
+    {% include "partials/conversion_bar.html" %}
+</body>
+</html>

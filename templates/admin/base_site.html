@@ -1,0 +1,18 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | لوحة تحكم الموقع{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/admin-dashboard.css' %}">
+{% endblock %}
+
+{% block branding %}
+<div class="admin-branding">
+    <h1 id="site-name"><a href="{% url 'admin:index' %}">لوحة تحكم الموقع</a></h1>
+    <p>إدارة المحتوى، المدن، الخدمات، المقالات، والـ SEO باللغة العربية</p>
+</div>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}

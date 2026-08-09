@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load static seo_images content_filters %}
+
+{% block extra_head %}
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Service","name":"{{ service.name|escapejs }} في {{ city.name|escapejs }}","description":"{{ seo.description|escapejs }}","provider":{"@type":"LocalBusiness","name":"{{ site_name|escapejs }}","telephone":"{{ contact_phone|escapejs }}","url":"{{ site_url }}/"},"areaServed":{"@type":"City","name":"{{ city.name|escapejs }}"},"url":"{{ seo.canonical|escapejs }}"}
+</script>
+{% endblock %}
+
+{% block content %}
+<section class="nn-page-hero">
+  <div class="container nn-page-hero-shell">
+    <div>
+      <nav class="nn-breadcrumb"><a href="{% url 'home' %}">الرئيسية</a><span>/</span><a href="{% url 'cities' %}">المدن</a><span>/</span><a href="{% url 'city_detail' city.slug %}">{{ city.name }}</a><span>/</span><span>{{ service.name }}</span></nav>
+      <span class="eyebrow">خدمة داخل {{ city.name }}</span><h1>{{ service.keyword|default:service.name }}</h1><p>{{ service.summary|default:service.description }}</p>
+      <div class="nn-hero-actions" style="margin-top:24px; margin-bottom:0;"><a class="btn btn-whatsapp" href="{{ whatsapp_url }}?text={{ quote_message|urlencode }}" target="_blank" rel="noopener"><img src="{% static 'images/whatsapp.svg' %}" alt="" aria-hidden="true" decoding="async">طلب الخدمة في {{ city.name }}</a><a class="btn btn-outline" href="{% url 'city_detail' city.slug %}#districts">اختيار الحي</a></div>
+    </div>
+    {% with hero_image=page_images|first %}{% if hero_image %}<figure class="nn-page-hero-visual">{% image_srcset hero_image.image_url as srcset %}{% image_dimensions hero_image.image_url as dimensions %}<img src="{{ hero_image.image_url }}" {{ dimensions|safe }} {% if srcset %}srcset="{{ srcset }}" sizes="(max-width:820px) 100vw, 42vw"{% endif %} alt="{{ service.name }} في {{ city.name }}" loading="eager" fetchpriority="high" decoding="async"></figure>{% endif %}{% endwith %}
+  </div>
+</section>
+
+<section class="section">
+  <div class="container nn-two-col">
+    <article class="nn-panel nn-rich-content"><span class="eyebrow">تفاصيل الخدمة</span>{{ service.description|safe_html }}{% if service.benefits %}<h2>ما يشمله التنفيذ</h2><ul>{% for benefit in service.benefits %}<li>{{ benefit }}</li>{% endfor %}</ul>{% endif %}</article>
+    <aside class="nn-panel nn-sticky-panel"><span class="eyebrow">طلب من {{ city.name }}</span><h2>أرسل الحي والصور</h2><p>أرسل موقع المشروع وصوره والمساحة والعدد أو المقاس المطلوب. نراجع التفاصيل ونحدد الخطوة التالية.</p><a class="btn btn-whatsapp" href="{{ whatsapp_url }}?text={{ quote_message|urlencode }}" target="_blank" rel="noopener"><img src="{% static 'images/whatsapp.svg' %}" alt="" aria-hidden="true" decoding="async">إرسال عبر واتساب</a></aside>
+  </div>
+</section>
+
+<section class="section nn-soft-section">
+  <div class="container"><header class="section-heading"><span class="eyebrow">طريقة العمل</span><h2>من تحديد الموقع إلى التسليم</h2></header><div class="nn-grid nn-grid-3"><article class="nn-panel"><span class="nn-chip nn-chip-green">01</span><h3>مراجعة الموقع</h3><p>المدينة والحي والصور والمقاسات وطبيعة الاستخدام.</p></article><article class="nn-panel"><span class="nn-chip nn-chip-green">02</span><h3>تحديد النطاق</h3><p>النوع والخامة والعدد والري والصرف أو التثبيت المطلوب.</p></article><article class="nn-panel"><span class="nn-chip nn-chip-green">03</span><h3>التنفيذ والمتابعة</h3><p>تنظيم التوريد والتنفيذ مع توضيح العناية اللاحقة.</p></article></div></div>
+</section>
+
+<section class="section">
+  <div class="container nn-two-col"><article class="nn-panel"><span class="eyebrow">خدمات مرتبطة</span><h2>خيارات أخرى في {{ city.name }}</h2><div class="nn-district-grid" style="grid-template-columns:repeat(2,minmax(0,1fr)); margin-top:20px;">{% for related in related_services|slice:":12" %}<a class="nn-district-link" href="{{ related.url }}"><span>{{ related.name }}</span><small>عرض</small></a>{% endfor %}</div></article><aside class="nn-panel"><span class="eyebrow">معلومة مهمة</span><h2>القرار النهائي بعد معاينة الموقع</h2><p>المعلومات هنا تعريف بنطاق الخدمة. الكميات والمقاسات وبرنامج الري والصيانة ومتطلبات التثبيت أو الترخيص تُحدد حسب الموقع الفعلي.</p></aside></div>
+</section>
+{% endblock %}

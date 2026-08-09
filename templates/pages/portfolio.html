@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load static seo_images %}
+
+{% block content %}
+<section class="nn-page-hero">
+  <div class="container nn-page-hero-shell">
+    <div>
+      <nav class="nn-breadcrumb"><a href="{% url 'home' %}">الرئيسية</a><span>/</span><span>المشاريع</span></nav>
+      <span class="eyebrow">المشاريع</span>
+      <h1>أعمال النخيل والحدائق والري والشبوك</h1>
+      <p>معرض مرتب حسب نوع المشروع وموقعه. كل مشروع جديد يُربط بمدينة وحي حتى يظهر تلقائيًا في صفحة الحي المناسبة.</p>
+    </div>
+    {% with hero_image=page_images|first %}{% if hero_image %}
+    <figure class="nn-page-hero-visual">{% image_srcset hero_image.image_url as srcset %}{% image_dimensions hero_image.image_url as dimensions %}<img src="{{ hero_image.image_url }}" {{ dimensions|safe }} {% if srcset %}srcset="{{ srcset }}" sizes="(max-width:820px) 100vw, 42vw"{% endif %} alt="مشاريع نخيل نجد" loading="eager" fetchpriority="high" decoding="async"></figure>
+    {% endif %}{% endwith %}
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="nn-grid nn-grid-3">
+      {% for item in portfolio_items %}
+      <article class="nn-project-card reveal">
+        {% image_srcset item.image_url as srcset %}{% image_dimensions item.image_url as dimensions %}
+        <img src="{{ item.image_url }}" {{ dimensions|safe }} {% if srcset %}srcset="{{ srcset }}" sizes="(max-width:640px) 100vw, 33vw"{% endif %} alt="{{ item.title }}" loading="lazy" decoding="async">
+        <div class="nn-project-copy"><div class="nn-meta"><span class="nn-chip">{{ item.category }}</span>{% if item.city %}<span class="nn-chip">{{ item.city }}{% if item.district %} · {{ item.district }}{% endif %}</span>{% endif %}</div><h3>{{ item.title }}</h3><p>{{ item.description|default:"مشروع منفذ ضمن خدمات نخيل نجد."|truncatechars:145 }}</p></div>
+      </article>
+      {% endfor %}
+    </div>
+    {% if page_obj and page_obj.paginator.num_pages > 1 %}
+    <nav class="nn-pagination" aria-label="صفحات المشاريع">
+      {% if page_obj.has_previous %}<a rel="prev" href="?page={{ page_obj.previous_page_number }}">السابق</a>{% endif %}
+      <span aria-current="page">{{ page_obj.number }} من {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}<a rel="next" href="?page={{ page_obj.next_page_number }}">التالي</a>{% endif %}
+    </nav>
+    {% endif %}
+  </div>
+</section>
+
+<section class="section nn-soft-section">
+  <div class="container nn-two-col"><article class="nn-panel"><span class="eyebrow">إضافة المشروع</span><h2>المدينة والحي جزء من بيانات المشروع</h2><p>عند اختيار المدينة وترك الحي فارغًا يختار النظام حيًا من أحياء المدينة تلقائيًا، ثم يظهر المشروع في صفحة الحي والمدينة ومعرض الأعمال.</p></article><aside class="nn-panel nn-sticky-panel"><span class="eyebrow">مشروع جديد</span><h2>ناقش موقعك معنا</h2><p>أرسل الصور والمدينة والحي ونوع التنفيذ المطلوب.</p><a class="btn btn-whatsapp" href="{{ whatsapp_url }}" target="_blank" rel="noopener"><img src="{% static 'images/whatsapp.svg' %}" alt="" aria-hidden="true" decoding="async">إرسال عبر واتساب</a></aside></div>
+</section>
+{% endblock %}

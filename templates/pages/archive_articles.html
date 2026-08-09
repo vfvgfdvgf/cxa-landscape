@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="page-hero compact">
+    <div class="container page-hero-shell">
+        <div>
+            <span class="eyebrow">شبكة المحتوى</span>
+            <h1>{{ archive_title }}</h1>
+            <p>{{ archive_intro }}</p>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="archive-toolbar">
+            <a class="btn btn-outline" href="{% url 'archive_network' %}">شبكة الأرشفة</a>
+            <a class="btn btn-outline" href="{% url 'archive_services' %}">فهرس الخدمات</a>
+            <a class="btn btn-outline" href="{% url 'archive_cities' %}">فهرس المدن</a>
+        </div>
+
+        <div class="archive-section">
+            <div class="section-heading">
+                <span class="eyebrow">المقالات</span>
+                <h2>كل المقالات المنشورة</h2>
+            </div>
+            <div class="archive-list">
+                {% for item in articles %}
+                <article>
+                    <span>مقال</span>
+                    <h2><a href="{{ item.url }}">{{ item.title }}</a></h2>
+                    {% if item.description %}<p>{{ item.description|truncatechars:180 }}</p>{% endif %}
+                </article>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="archive-section">
+            <div class="section-heading">
+                <span class="eyebrow">تصنيفات ووسوم</span>
+                <h2>مداخل إضافية للمحتوى</h2>
+            </div>
+            <div class="archive-link-grid dense">
+                {% for item in categories %}
+                <a href="{{ item.url }}"><span>تصنيف</span><strong>{{ item.title }}</strong></a>
+                {% endfor %}
+                {% for item in tags %}
+                <a href="{{ item.url }}"><span>وسم</span><strong>{{ item.title }}</strong></a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

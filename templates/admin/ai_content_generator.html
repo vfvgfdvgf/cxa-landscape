@@ -1,0 +1,168 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div class="dashboard-shell ai-workspace" dir="rtl">
+    <section class="dashboard-panel dashboard-panel-hero ai-hero">
+        <div>
+            <span class="ai-kicker">مساعد المحتوى و SEO</span>
+            <h2>مولد المحتوى بالذكاء الاصطناعي</h2>
+            <p>أنشئ أو حدّث المقالات والخدمات والمدن والصفحات المحلية من طلب واحد، مع حفظ النتيجة مباشرة داخل لوحة التحكم.</p>
+        </div>
+        <div class="ai-hero-steps" aria-label="خطوات العمل">
+            <span>1. اختر النوع</span>
+            <span>2. اكتب المطلوب</span>
+            <span>3. راجع النتيجة</span>
+        </div>
+    </section>
+
+    {% if not ai_key_configured %}
+    <section class="dashboard-panel ai-success-panel ai-warning-panel">
+        <div>
+            <h2>إعداد TokenMix مطلوب</h2>
+            <p>أضف مفتاح TokenMix داخل متغيرات البيئة ثم أعد تشغيل الخدمة حتى يعمل مولد المحتوى.</p>
+            <pre dir="ltr">TOKENMIX_API_KEY=ضع_المفتاح_هنا
+TOKENMIX_BASE_URL=https://api.tokenmix.ai/v1
+TOKENMIX_MODEL=gpt-4o-mini</pre>
+        </div>
+    </section>
+    {% endif %}
+
+    {% if saved_object %}
+    <section class="dashboard-panel ai-success-panel">
+        <div>
+            <h2>تم الحفظ بنجاح</h2>
+            <p>تم إنشاء أو تحديث المحتوى داخل لوحة التحكم.</p>
+        </div>
+        {% if saved_object_admin_url %}
+        <a class="dashboard-ai-button secondary" href="{{ saved_object_admin_url }}">فتح العنصر المحفوظ</a>
+        {% endif %}
+    </section>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" class="ai-generator-form ai-form-layout">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <section class="dashboard-panel errors">{{ form.non_field_errors }}</section>
+        {% endif %}
+
+        <section class="dashboard-panel ai-form-section">
+            <header class="ai-section-header">
+                <span>الخطوة 1</span>
+                <h2>نوع المهمة</h2>
+                <p>حدد هل تريد إنشاء عنصر جديد، تحديث عنصر موجود، أو تنفيذ أمر شامل لعدة مدن وخدمات.</p>
+            </header>
+            <div class="ai-field-grid two">
+                {% include "admin/partials/ai_field.html" with field=form.content_type %}
+                {% include "admin/partials/ai_field.html" with field=form.mode %}
+            </div>
+        </section>
+
+        <section class="dashboard-panel ai-form-section">
+            <header class="ai-section-header">
+                <span>الخطوة 2</span>
+                <h2>التعليمات الأساسية</h2>
+                <p>اكتب المطلوب بوضوح. كلما ذكرت المدن والخدمات والكلمات المستهدفة كانت النتيجة أدق.</p>
+            </header>
+            <div class="ai-field-grid">
+                {% include "admin/partials/ai_field.html" with field=form.title_hint %}
+                {% include "admin/partials/ai_field.html" with field=form.prompt wide=True %}
+            </div>
+            <div class="ai-examples">
+                <strong>أمثلة سريعة:</strong>
+                <button type="button" data-ai-example="أضف مدينة الخبر وأنشئ لها صفحات تنسيق حدائق وزراعة نخيل وري، مع عناوين SEO ووصف لكل صفحة.">مدينة + خدمات</button>
+                <button type="button" data-ai-example="حدّث صفحة لاندسكيب الرياض واجعل الوصف أقوى لمحركات البحث مع أسئلة شائعة وروابط داخلية.">تحسين صفحة</button>
+                <button type="button" data-ai-example="اكتب مقالًا عن أفضل وقت لزراعة النخيل في السعودية مع عنوان SEO ووصف مختصر وتصنيف مناسب.">مقال SEO</button>
+            </div>
+        </section>
+
+        <section class="dashboard-panel ai-form-section">
+            <header class="ai-section-header">
+                <span>الخطوة 3</span>
+                <h2>الاستهداف والربط</h2>
+                <p>هذه الحقول اختيارية، لكنها مهمة عند تحديث عنصر موجود أو ربط المحتوى بمدينة وخدمة محددة.</p>
+            </header>
+            <div class="ai-field-grid three">
+                {% include "admin/partials/ai_field.html" with field=form.object_id %}
+                {% include "admin/partials/ai_field.html" with field=form.city %}
+                {% include "admin/partials/ai_field.html" with field=form.service %}
+                {% include "admin/partials/ai_field.html" with field=form.blog_category %}
+                {% include "admin/partials/ai_field.html" with field=form.blog_tags %}
+                {% include "admin/partials/ai_field.html" with field=form.page_template_key %}
+            </div>
+        </section>
+
+        <section class="dashboard-panel ai-form-section">
+            <header class="ai-section-header">
+                <span>الخطوة 4</span>
+                <h2>النشر والوسائط</h2>
+                <p>ارفع صورًا مرجعية إذا كانت تساعد الذكاء الاصطناعي على فهم نوع المشروع أو الخدمة.</p>
+            </header>
+            <div class="ai-field-grid two">
+                {% include "admin/partials/ai_field.html" with field=form.images %}
+                <div class="ai-options-card">
+                    {% include "admin/partials/ai_field.html" with field=form.publish_now compact=True %}
+                    {% include "admin/partials/ai_field.html" with field=form.create_page_media compact=True %}
+                </div>
+            </div>
+        </section>
+
+        <section class="ai-submit-bar">
+            <a class="dashboard-ai-button secondary" href="{% url 'admin:index' %}">العودة للوحة التحكم</a>
+            <button type="submit" class="dashboard-ai-button">تشغيل الذكاء الاصطناعي وحفظ النتيجة</button>
+        </section>
+    </form>
+
+    {% if generated_payload %}
+    <section class="dashboard-panel">
+        <h2>المخرجات المولدة</h2>
+        <pre class="ai-output">{{ generated_payload|pprint }}</pre>
+    </section>
+    {% endif %}
+
+    {% if logs %}
+    <section class="dashboard-panel">
+        <div class="ai-section-header inline">
+            <div>
+                <span>المراقبة</span>
+                <h2>آخر العمليات</h2>
+            </div>
+        </div>
+        <table class="dashboard-table">
+            <thead>
+                <tr>
+                    <th>النوع</th>
+                    <th>الوضع</th>
+                    <th>الحالة</th>
+                    <th>الصور</th>
+                    <th>التاريخ</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in logs %}
+                <tr>
+                    <td>{{ item.get_content_type_display }}</td>
+                    <td>{{ item.get_mode_display }}</td>
+                    <td>{{ item.get_status_display }}</td>
+                    <td>{{ item.image_count }}</td>
+                    <td>{{ item.created_at|date:"Y-m-d H:i" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener("click", function (event) {
+  const button = event.target.closest("[data-ai-example]");
+  if (!button) return;
+  const prompt = document.querySelector("#{{ form.prompt.id_for_label }}");
+  if (prompt) {
+    prompt.value = button.getAttribute("data-ai-example");
+    prompt.focus();
+  }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load static seo_images %}
+{% block content %}
+<section class="nn-page-hero">
+  <div class="container nn-page-hero-shell">
+    <div><nav class="nn-breadcrumb"><a href="{% url 'home' %}">الرئيسية</a><span>/</span><span>المدن والأحياء</span></nav><span class="eyebrow">التغطية</span><h1>مدن ثابتة وأحياء بصفحات مستقلة</h1><p>اختر المدينة للوصول إلى خدماتها ومقالاتها، ثم اختر الحي لمشاهدة المشاريع والمحتوى المرتبط به.</p></div>
+    {% with hero_image=page_images|first %}{% if hero_image %}<figure class="nn-page-hero-visual">{% image_srcset hero_image.image_url as srcset %}{% image_dimensions hero_image.image_url as dimensions %}<img src="{{ hero_image.image_url }}" {{ dimensions|safe }} {% if srcset %}srcset="{{ srcset }}" sizes="(max-width:820px) 100vw, 42vw"{% endif %} alt="مدن وأحياء نخيل نجد" loading="eager" fetchpriority="high" decoding="async"></figure>{% endif %}{% endwith %}
+  </div>
+</section>
+<section class="section nn-section-white">
+  <div class="container">
+    <header class="section-heading split-heading"><div><span class="eyebrow">اختر المدينة</span><h2>التغطية المحلية</h2></div><p>كل مدينة تتضمن أحياء ثابتة، وصفحات خدمات ومقالات ومشاريع مرتبطة بالموقع.</p></header>
+    <div class="nn-grid nn-grid-4 nn-city-grid">
+      {% for city in cities_data %}
+      <article class="nn-card nn-city-card nn-city-card-v4 reveal">
+        <div class="nn-city-top"><span class="nn-city-index">{{ forloop.counter|stringformat:"02d" }}</span>{% if city.district_count %}<span class="nn-chip nn-chip-green">{{ city.district_count }} حي</span>{% endif %}</div>
+        <h3>{{ city.name }}</h3>
+        <p>{{ city.description|default:"خدمات نخيل وحدائق وري وشبوك في المدينة وأحيائها."|truncatechars:125 }}</p>
+        <a class="nn-card-link" href="{% url 'city_detail' city.slug %}">استكشف {{ city.name }}</a>
+      </article>
+      {% empty %}<div class="empty-state">تظهر المدن بعد تشغيل المزامنة.</div>{% endfor %}
+    </div>
+  </div>
+</section>
+<section class="section nn-section-soft"><div class="container nn-two-col"><article class="nn-panel"><span class="eyebrow">تنظيم المحتوى</span><h2>كل محتوى مرتبط بموقع واضح</h2><p>الخدمة والمقال والمشروع يمكن ربطه بمدينة وحي، حتى تصل للنتائج الأقرب لموقعك بدل صفحات عامة متكررة.</p></article><aside class="nn-panel nn-sticky-panel"><span class="eyebrow">طلب خدمة</span><h2>حدد مدينتك وحيك</h2><p>أرسل الموقع والصور ونوع الخدمة عبر واتساب لتقييم الاحتياج.</p><a class="btn btn-whatsapp" href="{{ whatsapp_url }}" target="_blank" rel="noopener"><img src="{% static 'images/whatsapp.svg' %}" alt="" aria-hidden="true" decoding="async">فتح واتساب</a></aside></div></section>
+{% endblock %}

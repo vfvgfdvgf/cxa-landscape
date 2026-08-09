@@ -1,0 +1,11 @@
+{% extends "admin/change_list.html" %}
+
+{% block object-tools-items %}
+{{ block.super }}
+<li>
+    <a href="bulk-upload/" class="addlink">رفع صور جديدة وتوزيعها</a>
+</li>
+<li>
+    <a href="bulk-replace/" class="addlink">استبدال الصور دفعة واحدة</a>
+</li>
+{% endblock %}

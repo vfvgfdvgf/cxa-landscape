@@ -1,0 +1,126 @@
+databases:
+  - name: nakheel-najd-db
+    plan: free
+    region: frankfurt
+    databaseName: nakheel_najd
+    user: nakheel_najd
+    ipAllowList: []
+
+services:
+  - type: web
+    name: nakheel-najd
+    runtime: python
+    plan: free
+    region: frankfurt
+    healthCheckPath: /api/v1/ready/
+    buildCommand: bash ./build.sh
+    startCommand: bash ./start.sh
+    autoDeployTrigger: commit
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.10
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: PYTHONDONTWRITEBYTECODE
+        value: "1"
+      - key: DJANGO_DEBUG
+        value: "False"
+      - key: DJANGO_PRODUCTION
+        value: "True"
+      - key: DJANGO_REQUIRE_EXTERNAL_SERVICES
+        value: "True"
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: nakheel-najd-db
+          property: connectionString
+      - key: SITE_DOMAIN
+        value: getsiaq.online
+      - key: WWW_SITE_DOMAIN
+        value: www.getsiaq.online
+      - key: SITE_URL
+        value: https://getsiaq.online
+      - key: FRONTEND_URL
+        value: https://getsiaq.online
+      - key: DJANGO_ALLOWED_HOSTS
+        value: getsiaq.online,www.getsiaq.online
+      - key: DJANGO_CSRF_TRUSTED_ORIGINS
+        value: https://getsiaq.online,https://www.getsiaq.online
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://getsiaq.online,https://www.getsiaq.online
+      - key: FRONTEND_API_SECRET
+        sync: false
+      - key: USE_CLOUDINARY_MEDIA
+        value: "True"
+      - key: CLOUDINARY_URL
+        sync: false
+      - key: DJANGO_SERVE_MEDIA_FILES
+        value: "False"
+      - key: STATIC_ROOT
+        value: staticfiles_build
+      - key: WHITENOISE_MANIFEST_STRICT
+        value: "False"
+      - key: WHITENOISE_MAX_AGE
+        value: "31536000"
+      - key: DJANGO_ENABLE_HTTPS_SECURITY
+        value: "True"
+      - key: DJANGO_SECURE_SSL_REDIRECT
+        value: "True"
+      - key: DJANGO_SECURE_HSTS_SECONDS
+        value: "31536000"
+      - key: DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS
+        value: "True"
+      - key: DJANGO_SECURE_HSTS_PRELOAD
+        value: "True"
+      - key: API_PAGE_SIZE
+        value: "12"
+      - key: API_SUBMISSION_RATE
+        value: 10/hour
+      - key: DJANGO_BOOTSTRAP_ON_START
+        value: "False"
+      - key: DJANGO_SUPERUSER_USERNAME
+        sync: false
+      - key: DJANGO_SUPERUSER_PASSWORD
+        sync: false
+      - key: TOKENMIX_BASE_URL
+        value: https://api.tokenmix.ai/v1
+      - key: TOKENMIX_MODEL
+        value: gpt-4o-mini
+      - key: AI_DAILY_SEO_ENABLED
+        value: "False"
+
+  - type: web
+    name: getsiaq-frontend
+    runtime: node
+    plan: free
+    region: frankfurt
+    rootDir: frontend
+    domains:
+      - getsiaq.online
+      - www.getsiaq.online
+    healthCheckPath: /api/health/
+    buildCommand: npm ci --include=dev && npm run typecheck && npm run build
+    startCommand: npm run start
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_VERSION
+        value: 22.18.0
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_TELEMETRY_DISABLED
+        value: "1"
+      - key: NEXT_PUBLIC_SITE_URL
+        value: https://getsiaq.online
+      - key: DJANGO_API_HOST
+        fromService:
+          type: web
+          name: nakheel-najd
+          property: host
+      - key: DJANGO_API_PORT
+        fromService:
+          type: web
+          name: nakheel-najd
+          property: port
+      - key: FRONTEND_API_SECRET
+        sync: false
