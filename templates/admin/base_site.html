@@ -8,6 +8,11 @@
 <link rel="stylesheet" href="{% static 'css/admin-dashboard.css' %}">
 {% endblock %}
 
+{% block extrahead %}
+{{ block.super }}
+<script defer src="{% static 'js/admin-home-media.js' %}"></script>
+{% endblock %}
+
 {% block branding %}
 <div class="admin-branding">
     <h1 id="site-name"><a href="{% url 'admin:index' %}">لوحة تحكم الموقع</a></h1>

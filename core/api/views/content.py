@@ -22,7 +22,7 @@ from core.api.serializers import (
     ServiceCategorySerializer,
     TagSerializer,
 )
-from core.api.utils import published_blog_filter
+from core.api.utils import cap_repeated_media, published_blog_filter
 from core.models import (
     BlogCategory,
     BlogPost,
@@ -41,7 +41,7 @@ def paginated_response(view, request, queryset, serializer_class):
     paginator = PublicPageNumberPagination()
     page = paginator.paginate_queryset(queryset, request, view=view)
     serializer = serializer_class(page, many=True, context={"request": request})
-    return paginator.get_paginated_response(serializer.data)
+    return paginator.get_paginated_response(cap_repeated_media(serializer.data))
 
 
 def service_queryset():
@@ -151,7 +151,7 @@ class PageDetailView(APIView):
             page = queryset.filter(template_key=slug).first()
         if page is None:
             raise Http404
-        return Response(PageSerializer(page, context={"request": request}).data)
+        return Response(cap_repeated_media(PageSerializer(page, context={"request": request}).data))
 
 
 class ServiceListView(APIView):
@@ -184,7 +184,7 @@ class ServiceCategoryDetailView(APIView):
 class ServiceDetailView(APIView):
     def get(self, request, slug):
         service = get_object_or_404(service_queryset(), slug=slug)
-        return Response(ServiceSerializer(service, context={"request": request}).data)
+        return Response(cap_repeated_media(ServiceSerializer(service, context={"request": request}).data))
 
 
 class ProjectListView(APIView):
@@ -199,7 +199,7 @@ class ProjectListView(APIView):
 class ProjectDetailView(APIView):
     def get(self, request, slug):
         project = get_object_or_404(project_queryset(), slug=slug)
-        return Response(ProjectSerializer(project, context={"request": request}).data)
+        return Response(cap_repeated_media(ProjectSerializer(project, context={"request": request}).data))
 
 
 class CityListView(APIView):
@@ -236,7 +236,7 @@ class CityDetailView(APIView):
         data["articles"] = ArticleCardSerializer(
             article_card_queryset().filter(city=city)[:8], many=True, context=context
         ).data
-        return Response(data)
+        return Response(cap_repeated_media(data))
 
 
 class CityDistrictListView(APIView):
@@ -269,7 +269,7 @@ class DistrictDetailView(APIView):
             article_card_queryset().filter(Q(district=district) | Q(city=district.city))[:8],
             many=True, context=context,
         ).data
-        return Response(data)
+        return Response(cap_repeated_media(data))
 
 
 class CityServiceDetailView(APIView):
@@ -280,7 +280,7 @@ class CityServiceDetailView(APIView):
             from django.http import Http404
 
             raise Http404("Service page not found")
-        return Response(CityServiceSerializer(page, context={"request": request}).data)
+        return Response(cap_repeated_media(CityServiceSerializer(page, context={"request": request}).data))
 
 
 class DistrictServiceDetailView(APIView):
@@ -301,7 +301,7 @@ class DistrictServiceDetailView(APIView):
             from django.http import Http404
 
             raise Http404("District service page not found")
-        return Response(CityServiceSerializer(page, context={"request": request}).data)
+        return Response(cap_repeated_media(CityServiceSerializer(page, context={"request": request}).data))
 
 
 class ArticleListView(APIView):
@@ -326,7 +326,7 @@ class ArticleDetailView(APIView):
         else:
             related = related.none()
         data["related_articles"] = ArticleCardSerializer(related[:3], many=True, context=context).data
-        return Response(data)
+        return Response(cap_repeated_media(data))
 
 
 class CategoryListView(APIView):

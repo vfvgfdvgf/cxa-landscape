@@ -8,6 +8,7 @@ import { CinematicVideo } from "@/components/media/CinematicVideo";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { Container } from "@/components/ui/Container";
 import { djangoApi } from "@/lib/django-api";
+import { enforceHomeMediaBudget } from "@/lib/media-budget";
 import { buildMetadata, SITE_URL } from "@/lib/metadata";
 import type { HomePageData, HomeSection } from "@/types";
 
@@ -27,6 +28,11 @@ function SectionLabel({ section, fallback }: { section?: HomeSection; fallback: 
   return <div className={`cinematic-label${section?.theme === "paper" ? " cinematic-label--dark" : ""}`} data-reveal-line><span>{section?.eyebrow || fallback}</span><i /></div>;
 }
 
+function sectionTheme(section: HomeSection | undefined, fallback: "dark" | "paper") {
+  const resolved = section?.theme === "paper" ? "paper" : section?.theme === "dark" ? "dark" : fallback;
+  return `cinematic-${resolved}`;
+}
+
 function Cta({ label, url, light = false, dark = false }: { label: string; url: string; light?: boolean; dark?: boolean }) {
   if (!label || !url) return null;
   return <Link className={`cinematic-button${light ? " cinematic-button--light" : ""}${dark ? " cinematic-button--dark" : ""}`} href={url}>{label}<b aria-hidden="true">↗</b></Link>;
@@ -37,7 +43,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomePage() {
-  const home = await getHome();
+  const home = enforceHomeMediaBudget(await getHome());
   const sectionMap = new Map((home.sections || []).filter((section) => section.is_visible).map((section) => [section.key, section]));
   const section = (key: string) => sectionMap.get(key);
   const heroTitle = lines(home.hero.title, "تنسيق حدائق\nولاندسكيب\nيصنع الفرق.");
@@ -69,6 +75,7 @@ export default async function HomePage() {
   const marquee = section("marquee");
   const marqueeItems = (marquee?.supporting_text || home.site.service_highlights.join("\n"))
     .split(/\r?\n/).map((item) => item.trim()).filter(Boolean);
+  const trustItems = lines(section("hero")?.supporting_text || "", "تصميم مدروس للمناخ\nمواد حقيقية من الميدان\nتنفيذ ومتابعة واضحة\nتغطية محلية واسعة").slice(0, 4);
 
   const websiteSchema = {
     "@context": "https://schema.org",
@@ -139,15 +146,12 @@ export default async function HomePage() {
 
       <div className="trust-ribbon cinematic-paper" aria-label="مجالات الخبرة">
         <Container>
-          <span>تصميم مدروس للمناخ</span><i />
-          <span>مواد حقيقية من الميدان</span><i />
-          <span>تنفيذ ومتابعة واضحة</span><i />
-          <span>تغطية محلية واسعة</span>
+          {trustItems.map((item, index) => <span key={item}>{item}{index < trustItems.length - 1 ? <i /> : null}</span>)}
         </Container>
       </div>
 
       {manifesto ? (
-        <section className="manifesto cinematic-dark">
+        <section className={`manifesto ${sectionTheme(manifesto, "dark")}`}>
           <Container>
             <SectionLabel section={manifesto} fallback="من نحن" />
             <div className="manifesto__grid">
@@ -164,7 +168,7 @@ export default async function HomePage() {
       ) : null}
 
       {stories?.items.some((item) => item.video) ? (
-        <section className="story-section cinematic-paper">
+        <section className={`story-section ${sectionTheme(stories, "paper")}`}>
           <Container>
             <SectionLabel section={stories} fallback="قصص من الميدان" />
             <div className="story-section__heading">
@@ -189,7 +193,7 @@ export default async function HomePage() {
       ) : null}
 
       {gallery?.items.some((item) => item.image) ? (
-        <section className="owner-gallery cinematic-paper">
+        <section className={`owner-gallery ${sectionTheme(gallery, "paper")}`}>
           <Container>
             <SectionLabel section={gallery} fallback="تفاصيل من أعمالنا" />
             <div className="owner-gallery__heading">
@@ -209,7 +213,7 @@ export default async function HomePage() {
       ) : null}
 
       {services ? (
-        <section className="services-editorial cinematic-dark">
+        <section className={`services-editorial ${sectionTheme(services, "dark")}`}>
           <Container>
             <SectionLabel section={services} fallback="خدماتنا" />
             <div className="services-editorial__intro">
@@ -232,7 +236,7 @@ export default async function HomePage() {
       ) : null}
 
       {process?.items.length ? (
-        <section className="process-editorial cinematic-paper">
+        <section className={`process-editorial ${sectionTheme(process, "paper")}`}>
           <Container>
             <SectionLabel section={process} fallback="منهج التنفيذ" />
             <div className="process-editorial__heading">
@@ -269,7 +273,7 @@ export default async function HomePage() {
       ) : null}
 
       {coverageSection ? (
-        <section className="coverage-section cinematic-paper">
+        <section className={`coverage-section ${sectionTheme(coverageSection, "paper")}`}>
           <Container>
             <SectionLabel section={coverageSection} fallback="نطاق التغطية" />
             <div className="coverage-section__grid">
@@ -295,7 +299,7 @@ export default async function HomePage() {
       ) : null}
 
       {projects && home.projects.length > 1 ? (
-        <section className="project-journal cinematic-dark">
+        <section className={`project-journal ${sectionTheme(projects, "dark")}`}>
           <Container>
             <SectionLabel section={projects} fallback="معرض الأعمال" />
             <div className="project-journal__heading">
@@ -316,7 +320,7 @@ export default async function HomePage() {
       ) : null}
 
       {testimonials && home.testimonials.length ? (
-        <section className="testimonial-editorial cinematic-paper">
+        <section className={`testimonial-editorial ${sectionTheme(testimonials, "paper")}`}>
           <Container>
             <SectionLabel section={testimonials} fallback="تجارب العملاء" />
             <div className="testimonial-editorial__heading">
@@ -338,7 +342,7 @@ export default async function HomePage() {
       ) : null}
 
       {insights && home.articles.length ? (
-        <section className="insights-section cinematic-paper">
+        <section className={`insights-section ${sectionTheme(insights, "paper")}`}>
           <Container>
             <SectionLabel section={insights} fallback="دليل الخبرة" />
             <div className="insights-section__heading">
@@ -363,7 +367,7 @@ export default async function HomePage() {
       ) : null}
 
       {faq?.items.length ? (
-        <section className="faq-editorial cinematic-dark">
+        <section className={`faq-editorial ${sectionTheme(faq, "dark")}`}>
           <Container>
             <SectionLabel section={faq} fallback="أسئلة قبل البداية" />
             <div className="faq-editorial__layout">

@@ -91,6 +91,15 @@ try {
       jsonLd: [...document.querySelectorAll('script[type="application/ld+json"]')].map(node => { try { JSON.parse(node.textContent); return true; } catch { return false; } })
     },
     images: [...document.images].map(img => { const r = img.getBoundingClientRect(); return { alt: img.alt, loaded: img.complete && img.naturalWidth > 0, visible: r.bottom > 0 && r.top < innerHeight, top: Math.round(r.top), width: img.naturalWidth, src: img.currentSrc }; }).slice(0, 30),
+    mediaUsage: (() => {
+      const normalize = value => { try { const url = new URL(value, location.origin); return (url.host + url.pathname).toLowerCase(); } catch { return value.split(/[?#]/)[0].toLowerCase(); } };
+      const sources = [
+        ...[...document.images].map(node => ({ kind: 'image', src: node.currentSrc || node.src })),
+        ...[...document.querySelectorAll('video')].map(node => ({ kind: 'video', src: node.currentSrc || node.querySelector('source')?.src || '' })),
+      ].filter(item => item.src);
+      const counts = sources.reduce((result, item) => { const key = item.kind + ':' + normalize(item.src); result[key] = (result[key] || 0) + 1; return result; }, {});
+      return { counts, violations: Object.entries(counts).filter(([, count]) => count > 3) };
+    })(),
     fallbacks: document.querySelectorAll('.image-fallback, .hero-image-fallback').length
   })`;
   const evaluation = await send("Runtime.evaluate", { expression, returnByValue: true }, sessionId);

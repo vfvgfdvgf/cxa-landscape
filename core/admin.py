@@ -7,11 +7,12 @@ from django.contrib.auth.admin import GroupAdmin, UserAdmin
 from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
+from django.db.models import Count
 from django.db.utils import OperationalError, ProgrammingError
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 from django.urls import path
-from django.utils.html import format_html
+from django.utils.html import format_html, format_html_join
 from django.conf import settings
 
 from .admin_site import admin_site
@@ -28,6 +29,8 @@ from .models import (
     District,
     HomeSection,
     HomeSectionMedia,
+    home_media_source_usage,
+    home_media_source_values,
     CityServicePage,
     ConversionEvent,
     Lead,
@@ -149,11 +152,11 @@ class SiteSettingsAdmin(SingletonAdmin):
         ("LocalBusiness Schema", {"fields": ("business_type", "legal_name", "street_address", "address_locality", "address_region", "postal_code", "address_country", "latitude", "longitude", "opening_hours", "area_served", "same_as_links")}),
         ("خيارات المحتوى", {"fields": ("service_highlights",)}),
         ("الشبكات الاجتماعية", {"fields": ("facebook_url", "instagram_url", "x_url", "linkedin_url")}),
-        ("هيرو الصفحة الرئيسية", {"fields": (
+        ("صور هيرو احتياطية", {"fields": (
             "homepage_hero_preview", "homepage_hero_background", "homepage_hero_background_url",
             "homepage_hero_mobile_background", "homepage_hero_mobile_background_url", "homepage_hero_alt",
             "homepage_hero_focus_x", "homepage_hero_focus_y", "homepage_hero_overlay_opacity",
-        )}),
+        ), "classes": ("collapse",), "description": "هذه الصور احتياطية فقط. الوسيط الظاهر في الرئيسية يُدار من «أقسام الصفحة الرئيسية → الهيرو الرئيسي»."}),
         ("خلفية هيرو المدونة", {"fields": ("blog_hero_background", "blog_hero_background_url")}),
         ("ألوان الموقع", {"fields": ("primary_color", "secondary_color", "accent_color", "background_color", "text_color")}),
         ("SEO الصفحة الرئيسية", {"fields": ("homepage_meta_title", "homepage_meta_description")}),
@@ -189,11 +192,48 @@ class HomeSectionMediaInline(admin.StackedInline):
     model = HomeSectionMedia
     extra = 0
     show_change_link = True
+    readonly_fields = ("inline_preview", "media_usage_summary")
     fieldsets = (
-        (None, {"fields": (("media_type", "is_active", "sort_order"), ("label", "title"), "description", "alt_text")}),
+        (None, {"fields": (("media_type", "is_active", "sort_order"), ("label", "title"), "description", "alt_text", ("inline_preview", "media_usage_summary"))}),
         ("الصورة", {"fields": (("image", "image_url"),), "classes": ("collapse",)}),
         ("الفيديو", {"fields": (("video", "video_url"), ("mobile_video", "mobile_video_url"), ("poster", "poster_url")), "classes": ("collapse",)}),
         ("الرابط", {"fields": (("link_label", "link_url"),), "classes": ("collapse",)}),
+    )
+
+    @admin.display(description="المعاينة")
+    def inline_preview(self, obj):
+        if not obj or not obj.pk:
+            return "تظهر المعاينة بعد حفظ العنصر."
+        source = obj.poster_resolved or obj.image_resolved
+        if source:
+            return format_html('<img src="{}" alt="" style="width:180px;height:110px;object-fit:cover;border-radius:10px">', source)
+        if obj.video_resolved:
+            return format_html('<video src="{}" controls muted playsinline preload="metadata" style="width:180px;height:110px;object-fit:cover;border-radius:10px;background:#0c0f0d"></video>', obj.video_resolved)
+        return "لا يوجد وسيط."
+
+    @admin.display(description="عدد الاستخدام")
+    def media_usage_summary(self, obj):
+        return homepage_media_usage_html(obj)
+
+
+def homepage_media_usage_html(obj):
+    if not obj or not obj.pk:
+        return "يُحسب بعد الحفظ. الحد الأقصى 3 مواضع لكل وسيط."
+    sources = sorted(home_media_source_values(obj))
+    if not sources:
+        return "لا يوجد وسيط مختار."
+    source_usage = [(source, home_media_source_usage(source)) for source in sources]
+    return format_html_join(
+        "<br>",
+        '<span class="media-usage-pill media-usage-pill--{}">{} · {} / 3</span>',
+        (
+            (
+                "limit" if usage >= 3 else "safe",
+                PurePath(source).name or source,
+                usage,
+            )
+            for source, usage in source_usage
+        ),
     )
 
 
@@ -203,15 +243,19 @@ class HomeSectionAdmin(SafeChangelistAdmin):
     list_editable = ("is_visible", "sort_order")
     list_filter = ("theme", "is_visible")
     search_fields = ("title", "eyebrow", "description", "supporting_text")
-    readonly_fields = ("section_preview",)
+    readonly_fields = ("section_preview", "media_usage_summary")
     inlines = (HomeSectionMediaInline,)
     fieldsets = (
         ("القسم", {"fields": ("key", ("is_visible", "sort_order", "theme"))}),
         ("النصوص", {"fields": ("eyebrow", "kicker", "title", "description", "supporting_text")}),
         ("الأزرار", {"fields": (("primary_cta_label", "primary_cta_url"), ("secondary_cta_label", "secondary_cta_url"))}),
-        ("صورة القسم", {"fields": ("section_preview", ("image", "image_url"), "media_alt"), "classes": ("collapse",)}),
+        ("الوسيط والمعاينة", {"fields": ("section_preview", "media_usage_summary", "media_alt"), "description": "اختر صورة أو فيديو. النظام يمنع تكرار الوسيط في أكثر من 3 مواضع."}),
+        ("صورة القسم", {"fields": (("image", "image_url"),), "classes": ("collapse",), "description": "ارفع صورة أو ضع رابط HTTPS، ولا تملأ الخيارين معًا."}),
         ("فيديو القسم", {"fields": (("video", "video_url"), ("mobile_video", "mobile_video_url"), ("poster", "poster_url"), "overlay_opacity"), "classes": ("collapse",)}),
     )
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).annotate(_media_count=Count("items", distinct=True))
 
     def get_readonly_fields(self, request, obj=None):
         fields = list(super().get_readonly_fields(request, obj))
@@ -230,7 +274,15 @@ class HomeSectionAdmin(SafeChangelistAdmin):
 
     @admin.display(description="العناصر")
     def media_count(self, obj):
-        return obj.items.count()
+        annotated = getattr(obj, "_media_count", None)
+        return annotated if annotated is not None else obj.items.count()
+
+    @admin.display(description="عدد استخدام الوسيط")
+    def media_usage_summary(self, obj):
+        return homepage_media_usage_html(obj)
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
     @admin.display(description="معاينة الوسائط")
     def section_preview(self, obj):
@@ -252,17 +304,31 @@ class HomeSectionAdmin(SafeChangelistAdmin):
 
 @admin.register(HomeSectionMedia, site=admin_site)
 class HomeSectionMediaAdmin(SafeChangelistAdmin):
-    list_display = ("preview", "title", "section", "media_type", "is_active", "sort_order", "updated_at")
+    list_display = ("preview", "title", "section", "media_type", "usage_count", "is_active", "sort_order", "updated_at")
     list_editable = ("is_active", "sort_order")
     list_filter = ("section", "media_type", "is_active")
     search_fields = ("title", "label", "description", "alt_text")
     autocomplete_fields = ("section",)
+    readonly_fields = ("large_preview", "media_usage_summary")
     fieldsets = (
-        ("العنصر", {"fields": ("section", ("media_type", "is_active", "sort_order"), "label", "title", "description", "alt_text")}),
-        ("الصورة", {"fields": (("image", "image_url"),)}),
-        ("الفيديو", {"fields": (("video", "video_url"), ("mobile_video", "mobile_video_url"), ("poster", "poster_url"))}),
-        ("الرابط", {"fields": (("link_label", "link_url"),)}),
+        ("العنصر", {"fields": ("section", ("media_type", "is_active", "sort_order"), "label", "title", "description", "alt_text", ("large_preview", "media_usage_summary"))}),
+        ("الصورة", {"fields": (("image", "image_url"),), "classes": ("collapse",)}),
+        ("الفيديو", {"fields": (("video", "video_url"), ("mobile_video", "mobile_video_url"), ("poster", "poster_url")), "classes": ("collapse",)}),
+        ("الرابط", {"fields": (("link_label", "link_url"),), "classes": ("collapse",)}),
     )
+
+    @admin.display(description="عدد الاستخدام")
+    def usage_count(self, obj):
+        sources = home_media_source_values(obj)
+        return max((home_media_source_usage(source) for source in sources), default=0)
+
+    @admin.display(description="معاينة الوسيط")
+    def large_preview(self, obj):
+        return HomeSectionMediaInline.inline_preview(self, obj)
+
+    @admin.display(description="عدد استخدام الوسيط")
+    def media_usage_summary(self, obj):
+        return homepage_media_usage_html(obj)
 
     @admin.display(description="معاينة")
     def preview(self, obj):

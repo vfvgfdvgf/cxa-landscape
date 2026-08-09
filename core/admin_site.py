@@ -35,7 +35,7 @@ class ArabicAdminSite(AdminSite):
     def index(self, request, extra_context=None):
         extra_context = extra_context or {}
         try:
-            from .models import BlogPost, City, Lead, Project, SEOAutomationRun, SEOReportIssue, SearchConsoleQuery, Service
+            from .models import BlogPost, City, HomeSection, Lead, Project, SEOAutomationRun, SEOReportIssue, SearchConsoleQuery, Service
 
             def admin_link(model_name):
                 try:
@@ -44,6 +44,7 @@ class ArabicAdminSite(AdminSite):
                     return "#"
 
             extra_context["dashboard_stats"] = [
+                {"label": "أقسام الرئيسية الظاهرة", "value": HomeSection.objects.filter(is_visible=True).count()},
                 {"label": "الخدمات", "value": Service.objects.count()},
                 {"label": "المدن", "value": City.objects.filter(is_system=True).count()},
                 {"label": "المقالات", "value": BlogPost.objects.count()},
@@ -56,6 +57,14 @@ class ArabicAdminSite(AdminSite):
             extra_context["seo_issues"] = SEOReportIssue.objects.filter(status="open").order_by("-detected_at")[:8]
             extra_context["latest_seo_run"] = SEOAutomationRun.objects.order_by("-started_at").first()
             extra_context["admin_groups"] = [
+                {
+                    "title": "الصفحة الرئيسية",
+                    "description": "عدّل العناوين والنصوص والصور والفيديوهات الظاهرة من مكان واحد.",
+                    "items": [
+                        {"label": "أقسام الصفحة الرئيسية", "url": admin_link("homesection"), "note": "الهيرو، النصوص، الأزرار، الترتيب والظهور"},
+                        {"label": "عناصر أقسام الرئيسية", "url": admin_link("homesectionmedia"), "note": "قصص الفيديو، المعرض، الخطوات والأسئلة"},
+                    ],
+                },
                 {
                     "title": "الإعدادات الأساسية",
                     "description": "هوية الموقع، إثبات الملكية، والقائمة الرئيسية.",

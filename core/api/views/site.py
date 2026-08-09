@@ -14,7 +14,7 @@ from core.api.serializers import (
     SiteSettingsSerializer,
     TestimonialSerializer,
 )
-from core.api.utils import absolute_media_url, clean_text, image_payload, seo_payload
+from core.api.utils import absolute_media_url, cap_repeated_media, clean_text, image_payload, seo_payload
 from core.context_processors import resolve_navigation_items
 from core.health import readiness_status
 from core.models import (
@@ -199,8 +199,7 @@ class HomeView(APIView):
         navigation = resolve_navigation_items()
         if not navigation:
             navigation = NavigationView().get(request).data
-        return Response(
-            {
+        payload = {
                 "site": SiteSettingsSerializer(settings_obj, context=context).data,
                 "navigation": NavigationSerializer(navigation, many=True).data,
                 "hero": {
@@ -257,7 +256,7 @@ class HomeView(APIView):
                     modified_time=home_page.updated_at if home_page else settings_obj.updated_at,
                 ),
             }
-        )
+        return Response(cap_repeated_media(payload))
 
 
 class TestimonialListView(APIView):

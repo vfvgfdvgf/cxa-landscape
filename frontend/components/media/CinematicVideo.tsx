@@ -12,7 +12,17 @@ interface CinematicVideoProps {
 
 export function CinematicVideo({ src, mobileSrc, poster, className, priority = false }: CinematicVideoProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [ready, setReady] = useState(false);
+  const [readySource, setReadySource] = useState("");
+  const [failedSource, setFailedSource] = useState("");
+  const ready = readySource === src;
+  const failed = failedSource === src;
+
+  const mimeType = (value: string) => {
+    const cleanValue = value.split(/[?#]/, 1)[0].toLowerCase();
+    if (cleanValue.endsWith(".webm")) return "video/webm";
+    if (cleanValue.endsWith(".mov")) return "video/quicktime";
+    return "video/mp4";
+  };
 
   useEffect(() => {
     const video = videoRef.current;
@@ -43,7 +53,7 @@ export function CinematicVideo({ src, mobileSrc, poster, className, priority = f
   return (
     <video
       ref={videoRef}
-      className={`${className || ""}${ready ? " is-ready" : ""}`.trim()}
+      className={`${className || ""}${ready ? " is-ready" : ""}${failed ? " is-failed" : ""}`.trim()}
       autoPlay={priority}
       muted
       loop
@@ -52,10 +62,11 @@ export function CinematicVideo({ src, mobileSrc, poster, className, priority = f
       poster={poster}
       aria-hidden="true"
       tabIndex={-1}
-      onCanPlay={() => setReady(true)}
+      onCanPlay={() => setReadySource(src)}
+      onError={() => setFailedSource(src)}
     >
-      {mobileSrc ? <source media="(max-width: 767px)" src={mobileSrc} type="video/mp4" /> : null}
-      <source src={src} type="video/mp4" />
+      {mobileSrc ? <source media="(max-width: 767px)" src={mobileSrc} type={mimeType(mobileSrc)} /> : null}
+      <source src={src} type={mimeType(src)} />
     </video>
   );
 }

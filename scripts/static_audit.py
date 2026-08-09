@@ -215,6 +215,15 @@ def check_frontend_contract() -> None:
             fail(f"Frontend media copy step is incomplete: {marker}")
     if '"prebuild": "node scripts/copy-public-media.mjs"' not in package_json:
         fail("Frontend build must mirror optimized portfolio media into Next public/media")
+    media_budget = read("frontend/lib/media-budget.ts")
+    page_hero = read("frontend/components/ui/PageHero.tsx")
+    api_utils = read("core/api/utils.py")
+    if "enforceHomeMediaBudget" not in media_budget or "maxUses = 3" not in media_budget:
+        fail("Frontend homepage media repetition protection is missing")
+    if "cap_repeated_media" not in api_utils or "max_uses=3" not in api_utils:
+        fail("Public API media repetition protection is missing")
+    if 'videoSrc = "/videos/story-finished.mp4"' in page_hero or "INTERIOR_HERO_MEDIA" not in page_hero:
+        fail("Interior pages still depend on one repeated default hero video")
     if '/media/:path*' not in next_config or 'max-age=86400, s-maxage=31536000, stale-while-revalidate=604800' not in next_config:
         fail("Frontend media must use short browser cache plus long shared-CDN cache headers")
 
@@ -667,7 +676,7 @@ def check_configuration() -> None:
     for marker in ("meta_tags", "html_files", "dns_records", "google_analytics_id", "google_tag_manager_id"):
         if marker not in serializer_text:
             fail(f"Search Console public verification payload is missing: {marker}")
-    for marker in ("verificationTags", "googletagmanager.com/gtag/js", "googletagmanager.com/gtm.js", "ns.html"):
+    for marker in ("verificationTags", "GoogleAnalytics", "GoogleTagManager", "ns.html"):
         if marker not in layout_text:
             fail(f"Search Console/Google tag rendering is incomplete: {marker}")
     if "google:token" not in next_config or "site-verification/google" not in next_config:
@@ -761,6 +770,8 @@ def check_configuration() -> None:
         "0028_search_console_property_format.py",
         "0029_site_verification_model_state.py",
         "0030_local_image_source_fields.py",
+        "0031_homesection_homesectionmedia.py",
+        "0032_alter_sitesettings_homepage_meta_description_and_more.py",
     ):
         if expected not in migration_files:
             fail(f"Missing migration: {expected}")

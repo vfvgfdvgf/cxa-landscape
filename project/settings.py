@@ -129,6 +129,8 @@ JAZZMIN_SETTINGS = {
         "core.MediaFolder",
     ],
     "order_with_respect_to": [
+        "core.HomeSection",
+        "core.HomeSectionMedia",
         "core.SiteSettings",
         "core.SiteVerification",
         "core.NavigationItem",
@@ -162,6 +164,8 @@ JAZZMIN_SETTINGS = {
         ]
     },
     "icons": {
+        "core.HomeSection": "fas fa-layer-group",
+        "core.HomeSectionMedia": "fas fa-photo-video",
         "core.SiteSettings": "fas fa-cogs",
         "core.SiteVerification": "fas fa-shield-alt",
         "core.NavigationItem": "fas fa-list",

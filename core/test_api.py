@@ -1,7 +1,8 @@
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse
-from django.test import RequestFactory, TestCase, override_settings
+from django.contrib.auth import get_user_model
+from django.test import RequestFactory, SimpleTestCase, TestCase, override_settings
 from django.utils import timezone
 from rest_framework.test import APIClient
 
@@ -13,6 +14,7 @@ from core.models import (
     CityServicePage,
     District,
     HomeSection,
+    HomeSectionMedia,
     Lead,
     LegacyRedirect,
     Page,
@@ -22,6 +24,21 @@ from core.models import (
     Testimonial,
 )
 from core.middleware import SecurityHeadersMiddleware
+from core.api.utils import cap_repeated_media
+
+
+class MediaBudgetTests(SimpleTestCase):
+    def test_repeated_media_is_limited_without_mutating_source(self):
+        source = [
+            {"image": {"url": "https://cdn.example.com/shared.webp?version=1"}, "video": "/videos/shared.mp4"}
+            for _ in range(5)
+        ]
+
+        result = cap_repeated_media(source)
+
+        self.assertEqual(sum(item["image"] is not None for item in result), 3)
+        self.assertEqual(sum(bool(item["video"]) for item in result), 3)
+        self.assertTrue(all(item["image"] is not None for item in source))
 
 
 @override_settings(
@@ -146,6 +163,61 @@ class PublicApiTests(TestCase):
         payload = next(item for item in response.data["sections"] if item["key"] == "manifesto")
         self.assertEqual(payload["title"], "عنوان قابل للتحرير من لوحة التحكم")
         self.assertEqual(payload["description"], "نص محدث ينعكس في الواجهة من خلال API.")
+
+    def test_home_media_repetition_is_blocked_after_three_placements(self):
+        gallery = HomeSection.objects.get(key="gallery")
+        shared_source = "/editorial/gallery/shared-quality-check.webp"
+        for index in range(3):
+            item = HomeSectionMedia(
+                section=gallery,
+                media_type="image",
+                title=f"عنصر اختبار {index}",
+                image_url=shared_source,
+            )
+            item.full_clean()
+            item.save()
+
+        fourth = HomeSectionMedia(
+            section=gallery,
+            media_type="image",
+            title="عنصر رابع مكرر",
+            image_url=shared_source,
+        )
+        with self.assertRaises(ValidationError):
+            fourth.full_clean()
+
+    def test_home_media_upload_and_url_cannot_be_selected_together(self):
+        gallery = HomeSection.objects.get(key="gallery")
+        item = HomeSectionMedia(
+            section=gallery,
+            media_type="image",
+            title="مصدران للصورة",
+            image="home-sections/items/images/example.webp",
+            image_url="/editorial/gallery/example.webp",
+        )
+        with self.assertRaises(ValidationError):
+            item.full_clean()
+
+    def test_service_list_never_returns_one_image_more_than_three_times(self):
+        source = "https://res.cloudinary.com/demo/image/upload/repeated-list-image.jpg"
+        for index in range(5):
+            Service.objects.create(
+                title=f"خدمة متكررة {index}",
+                slug=f"repeated-media-service-{index}",
+                description="خدمة لاختبار ميزانية الوسائط.",
+                image_url=source,
+                auto_classify=False,
+                auto_distribute=False,
+                is_visible=True,
+            )
+
+        response = self.client.get("/api/v1/services/", {"page_size": 24})
+        repeated = [
+            item["image"]["url"]
+            for item in response.data["results"]
+            if item.get("image") and "repeated-list-image.jpg" in item["image"]["url"]
+        ]
+        self.assertEqual(len(repeated), 3)
 
     def test_frontend_origin_receives_cors_headers(self):
         response = self.client.get(
@@ -362,3 +434,31 @@ class PublicApiTests(TestCase):
 
         self.assertEqual(response.status_code, 404)
         self.assertNotIn("Location", response)
+
+
+@override_settings(ALLOWED_HOSTS=["testserver"], SECURE_SSL_REDIRECT=False)
+class HomepageAdminTests(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_superuser(
+            username="cms-auditor",
+            email="audit@example.com",
+            password="strong-test-password",
+        )
+        self.client.force_login(self.user)
+
+    def test_homepage_cms_dashboard_and_edit_screens_open(self):
+        hero = HomeSection.objects.get(key="hero")
+        urls = (
+            "/admin/",
+            "/admin/core/homesection/",
+            f"/admin/core/homesection/{hero.pk}/change/",
+            "/admin/core/homesectionmedia/",
+        )
+        for url in urls:
+            with self.subTest(url=url):
+                response = self.client.get(url)
+                self.assertEqual(response.status_code, 200)
+
+        dashboard = self.client.get("/admin/").content.decode("utf-8")
+        self.assertIn("أقسام الصفحة الرئيسية", dashboard)
+        self.assertIn("عناصر أقسام الرئيسية", dashboard)

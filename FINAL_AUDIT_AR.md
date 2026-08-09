@@ -1,47 +1,42 @@
-# تقرير الفحص النهائي — V5.0 Final
+# تقرير الفحص النهائي — V6.4
 
-تاريخ الفحص: 8 أغسطس 2026.
+تاريخ الفحص: 9 أغسطس 2026.
 
 ## النتيجة
 
-تمت مراجعة بنية Django وNext.js، إعداد Render، الكتالوج، الصور، SEO، Google Search Console، Cloudinary، migrations، وأجزاء Git/release hygiene.
+النسخة جاهزة للرفع على Render. تمت مراجعة Django وNext.js ولوحة التحكم والوسائط وSEO وإعداد Blueprint، ثم تشغيل الخدمتين معًا على قاعدة بيانات جديدة تحاكي تركيب الإنتاج.
 
-### اختبارات نجحت في بيئة الفحص
+## الفحوص الناجحة
 
-- بناء حزمة CSS العامة عبر `scripts/build_public_assets.py`.
-- `scripts/static_audit.py` بدون أخطاء.
-- Python `compileall` لكامل المشروع.
-- تحليل Syntax لجميع ملفات TypeScript/TSX (72 ملفًا) بدون أخطاء parsing.
-- JSON parsing لـ`package.json` و`package-lock.json` و`tsconfig.json`.
-- Syntax لأوامر Node/start scripts.
-- YAML parsing لـRender وGitHub Actions داخل الفحص الآلي.
-- Shell syntax لأمر تشغيل Procfile.
-- صورة/مشتقات: 553 ملف صورة، 95 أصلًا، 458 Responsive derivative.
-- Catalog source: 250 خدمة، 50 خدمة محلية أساسية، 12 مدينة، 330 حيًا، 93 صورة مشروع.
-- 33 migration وLeaf واحدة في graph.
+- `python manage.py check`: بدون مشاكل.
+- `python manage.py makemigrations --check --dry-run`: لا تغييرات غير مرحّلة.
+- `python manage.py test core`: **59/59 اختبارًا ناجحًا**.
+- `python scripts/static_audit.py`: ناجح؛ 250 خدمة و12 مدينة و330 حيًا و553 ملف صورة.
+- `npm run lint`: ناجح بدون أخطاء أو تنبيهات.
+- `npm run typecheck`: ناجح.
+- `npm run build`: بناء Next.js الإنتاجي ناجح لكل المسارات.
+- ترحيل قاعدة جديدة وتشغيل `bootstrap_nakheel_najd`: ناجح.
+- ربط Next.js مع Django واختبار 10 مسارات رئيسية: كلها HTTP 200.
+- فحص JSON الرئيسية: 14 قسمًا، ولا توجد صورة أو فيديو مستخدم أكثر من 3 مرات.
+- سجلات Django وNext أثناء فحص التكامل: بدون Error أو Traceback.
 
-### إصلاحات حرجة ضمن النسخة
+## أهم إصلاحات V6.4
 
-- إصلاح optional chaining لمسار Google HTML verification في Next.js.
-- منع Runtime 404 لصفحات `services` و`portfolio` المدارة عن طريق إنشاء Page records مستقرة.
-- حل احتمال `MultipleObjectsReturned` في Page API عن طريق resolution محدد الترتيب.
-- جعل حقول مصدر الصور تقبل `/static/` و`/media/` وCloudinary/HTTPS بصورة صحيحة في Django Admin، مع migration `0030`.
-- عدم حذف `PageMedia` أو `ProjectImage` أو تعطيل مكتبة الصور أثناء الإصلاح التلقائي.
-- عدم الكتابة فوق النصوص والصور التي عدّلها المحرر في عمليات repair الاعتيادية.
-- عدم عرض سجلات `local_solution` على أنها مشاريع منفذة في الرئيسية.
-- تشغيل `ensure_public_catalog` بالخلفية حتى لا يمنع Gunicorn من فتح منفذ Render.
-- فحص missing migrations في Build قبل النشر.
-- تثبيت devDependencies أثناء Build على Render عبر `--include=dev` و`frontend/.npmrc`، ثم توليد أنواع Next.js وفحص TypeScript قبل Next build.
-- إزالة اعتماد Render على `CLOUDINARY_URL` وتوحيد المتغيرات الثلاثة المنفصلة.
-- إضافة `check_cloudinary_storage` لعزل مشكلة صلاحية upload/create عن أخطاء التطبيق.
-- منع `frontend/public/media/` المولد من الدخول إلى Git history.
+- منع المصدر الرابع المكرر في لوحة التحكم، مع حماية إضافية في الـAPI والواجهة.
+- استبدال فيديو هيرو الصفحات الداخلية الواحد بأربعة فيديوهات موزعة حسب محتوى الصفحة.
+- إضافة معاينة الوسائط وعدّاد استخدامها وإرشادات نوع العنصر داخل لوحة التحكم.
+- منع اختيار ملف مرفوع ورابط خارجي للوسيط نفسه في وقت واحد.
+- ربط النصوص والوسائط والأزرار والنمط اللوني للأقسام الثابتة بالواجهة فعليًا.
+- تحسين العناوين الطويلة والقائمة والكروت الأفقية على الجوال.
+- تحميل Google Analytics وTag Manager عبر مكونات Next الرسمية.
 
-### قيود الفحص المحلي
+## بعد النشر
 
-تعذر تنفيذ `npm ci` داخل بيئة الفحص الحالية لأن مرآة npm الداخلية لا تحتوي الحزمة `zod-validation-error@4.0.2`. هذا قصور في المرآة الخاصة ببيئة الفحص، وليس خطأ lockfile مثبتًا؛ Render سبق أن نجح في `npm ci` لنفس شجرة الاعتماد. لذلك تم جعل Render نفسه ينفذ `npm ci --include=dev && npm run typecheck && npm run build` كشرط إلزامي للنشر.
+تبقى صلاحية حساب Cloudinary أمرًا خارجيًا. نفّذ من Render Shell:
 
-كذلك لم تتوفر Django 5.2.17 في مرآة Python المحلية، لذلك Runtime checks النهائية (`manage.py check` و`makemigrations --check`) موكلة إلى Build على Render، وهي مضمنة إلزاميًا في `render.yaml`.
+```bash
+python manage.py check_cloudinary_storage
+python manage.py ensure_public_catalog
+```
 
-### نقطة خارج الكود تحتاج تحقق بعد النشر
-
-صلاحية Cloudinary API key. إذا رجع أمر `check_cloudinary_storage` خطأ `actions=["create"]` فيجب إعطاء المفتاح Role يسمح بإنشاء/رفع Assets داخل Cloudinary.
+إذا ظهر `actions=["create"]` فعدّل Role مفتاح Cloudinary ليملك صلاحية إنشاء ورفع Assets.

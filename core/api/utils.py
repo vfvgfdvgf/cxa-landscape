@@ -1,4 +1,5 @@
 import logging
+from copy import deepcopy
 from functools import lru_cache
 from html import unescape
 from pathlib import Path
@@ -210,3 +211,58 @@ def published_blog_filter():
 
 def public_site_url():
     return getattr(settings, "FRONTEND_URL", PUBLIC_SITE_URL).rstrip("/") or PUBLIC_SITE_URL
+
+
+def _media_identity(value):
+    """Return a stable identity for local/CDN media while ignoring cache query strings."""
+    if not value:
+        return ""
+    parsed = urlsplit(str(value))
+    if parsed.scheme or parsed.netloc:
+        return f"{parsed.netloc.lower()}{parsed.path}".rstrip("/").lower()
+    return parsed.path.rstrip("/").lower()
+
+
+def cap_repeated_media(payload, max_uses=3):
+    """
+    Return a safe copy of an API payload where one image/video cannot occupy
+    more than ``max_uses`` visible placements. Responsive variants and SEO
+    schema URLs are deliberately ignored because they are not extra placements.
+    """
+    safe_payload = deepcopy(payload)
+    usage = {"image": {}, "video": {}}
+
+    def keep(kind, value):
+        identity = _media_identity(value)
+        if not identity:
+            return True
+        current = usage[kind].get(identity, 0)
+        usage[kind][identity] = current + 1
+        return current < max_uses
+
+    def walk(value):
+        if isinstance(value, list):
+            for item in value:
+                walk(item)
+            return
+        if not isinstance(value, dict):
+            return
+
+        for key, child in list(value.items()):
+            if key == "image" and isinstance(child, dict) and child.get("url"):
+                if not keep("image", child["url"]):
+                    value[key] = None
+                # Do not count srcset variants as additional images.
+                continue
+            if key == "poster" and isinstance(child, str) and child:
+                if not keep("image", child):
+                    value[key] = ""
+                continue
+            if key in {"video", "mobile_video"} and isinstance(child, str) and child:
+                if not keep("video", child):
+                    value[key] = ""
+                continue
+            walk(child)
+
+    walk(safe_payload)
+    return safe_payload

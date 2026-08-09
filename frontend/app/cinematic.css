@@ -233,6 +233,15 @@ main:not(:has(.page-hero)):not(:has(.cinematic-hero)) { padding-top: var(--heade
   letter-spacing: .04em;
 }
 .trust-ribbon i { width: .28rem; height: .28rem; flex: 0 0 auto; background: var(--cinema-gold); border-radius: 50%; }
+.trust-ribbon span { display: inline-flex; align-items: center; gap: clamp(1rem, 3vw, 2.5rem); white-space: nowrap; }
+
+/* Admin-selectable section themes must affect the complete section, not only its label. */
+.cinematic-home section.cinematic-paper { color: var(--cinema-black); background-color: var(--cinema-paper); }
+.cinematic-home section.cinematic-paper :is(h2, h3, strong, summary) { color: var(--cinema-black); }
+.cinematic-home section.cinematic-paper :is(p, small, blockquote) { color: rgb(12 15 13 / 68%); }
+.cinematic-home section.cinematic-dark { color: var(--cinema-paper); background-color: var(--cinema-black); }
+.cinematic-home section.cinematic-dark :is(h2, h3, strong, summary) { color: var(--cinema-paper); }
+.cinematic-home section.cinematic-dark :is(p, small, blockquote) { color: rgb(240 238 231 / 68%); }
 
 .manifesto { position: relative; min-height: 52rem; overflow: hidden; padding-block: clamp(6rem, 11vw, 11rem); }
 .manifesto__grid {
@@ -574,7 +583,16 @@ main:not(:has(.page-hero)):not(:has(.cinematic-hero)) { padding-top: var(--heade
   letter-spacing: .14em;
 }
 .page-hero--cinematic .cinematic-label { max-width: 34rem; margin-bottom: clamp(3rem, 7vw, 6rem); }
-.page-hero--cinematic h1 { max-width: 72rem; margin: 0 0 1.2rem; color: #fff; font-size: clamp(3.7rem, 8vw, 8rem); font-weight: 400; line-height: .88; }
+.page-hero--cinematic h1 {
+  max-width: min(72rem, 18ch);
+  margin: 0 0 1.2rem;
+  color: #fff;
+  font-size: clamp(3.3rem, 7.4vw, 7.5rem);
+  font-weight: 400;
+  line-height: .9;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
 .page-hero--cinematic .page-hero__lead { max-width: 44rem; margin: 0; color: rgb(255 255 255 / 68%); font-size: clamp(.95rem, 1.6vw, 1.2rem); }
 .page-hero__children { margin-top: 1.4rem; }
 .page-hero__children:empty { display: none; }
@@ -633,7 +651,14 @@ main:not(:has(.page-hero)):not(:has(.cinematic-hero)) { padding-top: var(--heade
   .header-actions > .button { display: none; }
   .header-actions { margin-inline-start: auto; }
   .mobile-menu { display: block; }
-  .mobile-menu__panel { inset: var(--header-height) 1rem auto; border-radius: 0; background: rgb(12 15 13 / 98%); }
+  .mobile-menu__panel {
+    inset: var(--header-height) 1rem auto;
+    max-height: calc(100dvh - var(--header-height) - 1rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-radius: 0;
+    background: rgb(12 15 13 / 98%);
+  }
 }
 
 @media (max-width: 900px) {
@@ -744,14 +769,23 @@ main:not(:has(.page-hero)):not(:has(.cinematic-hero)) { padding-top: var(--heade
   .faq-editorial summary { min-height: 6rem; grid-template-columns: 2rem minmax(0, 1fr) 1.5rem; font-size: 1.45rem; }
   .faq-editorial details > p { margin: -.5rem 3rem 1.7rem 0; }
   .closing-scene { min-height: 78svh; }
-  .closing-scene h2 { font-size: clamp(4.3rem, 20vw, 7rem); }
+  .closing-scene h2 { max-width: 11ch; font-size: clamp(3.5rem, 17vw, 6.2rem); overflow-wrap: anywhere; }
   .word-marquee span { font-size: 4.5rem; }
   .page-hero--cinematic { min-height: 68svh; }
-  .page-hero--cinematic h1 { font-size: clamp(3.3rem, 14vw, 5.2rem); }
+  .page-hero--cinematic h1 { max-width: 15ch; font-size: clamp(2.8rem, 12.5vw, 4.8rem); line-height: .95; }
   .page-hero--cinematic .cinematic-label { margin-bottom: 3rem; }
   .page-hero__edition { inset-inline: 0; }
   .footer-wordmark { width: min(100% - 1.25rem, 88rem); font-size: 17vw; }
 }
+
+.video-stories,
+.owner-gallery__grid,
+.project-journal__grid { scrollbar-width: none; }
+.video-stories::-webkit-scrollbar,
+.owner-gallery__grid::-webkit-scrollbar,
+.project-journal__grid::-webkit-scrollbar { display: none; }
+
+:where(section[id], h2[id], h3[id]) { scroll-margin-top: calc(var(--header-height) + 1.5rem); }
 
 @media (prefers-reduced-motion: reduce) {
   .word-marquee__track { animation: none; }

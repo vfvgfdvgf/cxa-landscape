@@ -9,6 +9,7 @@ from django.core.validators import FileExtensionValidator, MaxValueValidator, Mi
 from django.core.files.storage import default_storage
 from django.db import models
 from django.db.models.deletion import ProtectedError
+from django.db.models import Q
 from django.templatetags.static import static
 
 from .html_utils import sanitize_html
@@ -70,6 +71,72 @@ def home_video_storage():
 
         return VideoMediaCloudinaryStorage()
     return default_storage
+
+
+HOME_MEDIA_SOURCE_FIELDS = (
+    "image", "image_url", "video", "video_url", "mobile_video",
+    "mobile_video_url", "poster", "poster_url",
+)
+
+
+def home_media_source_values(instance):
+    """Return unique stored media identities for one homepage placement."""
+    sources = set()
+    for field_name in HOME_MEDIA_SOURCE_FIELDS:
+        value = getattr(instance, field_name, None)
+        if hasattr(value, "name"):
+            value = value.name
+        normalized = str(value or "").strip()
+        if normalized:
+            sources.add(normalized)
+    return sources
+
+
+def home_media_source_usage(source, exclude_instance=None):
+    """Count homepage placements using a source, not alternative fields in one placement."""
+    source = str(source or "").strip()
+    if not source:
+        return 0
+    lookup = Q()
+    for field_name in HOME_MEDIA_SOURCE_FIELDS:
+        lookup |= Q(**{field_name: source})
+    count = 0
+    for model in (HomeSection, HomeSectionMedia):
+        queryset = model.objects.filter(lookup)
+        if exclude_instance and isinstance(exclude_instance, model) and exclude_instance.pk:
+            queryset = queryset.exclude(pk=exclude_instance.pk)
+        count += queryset.count()
+    return count
+
+
+def validate_home_media_repetition(instance, max_placements=3):
+    errors = []
+    for source in sorted(home_media_source_values(instance)):
+        existing = home_media_source_usage(source, exclude_instance=instance)
+        if existing >= max_placements:
+            filename = PurePath(urlsplit(source).path).name or source
+            errors.append(
+                f"الوسيط «{filename}» مستخدم في {existing} مواضع أخرى. "
+                f"الحد الأقصى {max_placements} مواضع؛ اختر صورة أو فيديو مختلفًا."
+            )
+    if errors:
+        raise ValidationError(errors)
+
+
+def validate_media_pair(instance, upload_field, url_field, label):
+    if getattr(instance, upload_field, None) and getattr(instance, url_field, ""):
+        raise ValidationError(
+            {url_field: f"اختر {label} مرفوعًا أو رابطًا خارجيًا، وليس الاثنين معًا."}
+        )
+
+
+def validate_cta_pair(instance, label_field, url_field, label):
+    has_label = bool(str(getattr(instance, label_field, "") or "").strip())
+    has_url = bool(str(getattr(instance, url_field, "") or "").strip())
+    if has_label != has_url:
+        raise ValidationError(
+            {url_field if has_label else label_field: f"أكمل نص {label} ورابطه معًا، أو اتركهما فارغين."}
+        )
 
 
 def normalize_image_field_name(name, upload_prefix):
@@ -468,6 +535,20 @@ class HomeSection(TimeStampedModel):
     def __str__(self):
         return self.get_key_display()
 
+    def clean(self):
+        super().clean()
+        validate_media_pair(self, "image", "image_url", "صورة القسم")
+        validate_media_pair(self, "video", "video_url", "فيديو القسم")
+        validate_media_pair(self, "mobile_video", "mobile_video_url", "فيديو الجوال")
+        validate_media_pair(self, "poster", "poster_url", "صورة انتظار الفيديو")
+        # The featured-project button can intentionally inherit the selected project's URL.
+        if self.key != "feature" or self.primary_cta_url:
+            validate_cta_pair(self, "primary_cta_label", "primary_cta_url", "الزر الرئيسي")
+        validate_cta_pair(self, "secondary_cta_label", "secondary_cta_url", "الزر الثاني")
+        if (self.video or self.video_url) and (self.image or self.image_url):
+            raise ValidationError("اختر صورة القسم أو فيديو القسم. استخدم Poster كصورة احتياطية للفيديو.")
+        validate_home_media_repetition(self)
+
     def save(self, *args, **kwargs):
         if self.image:
             optimize_uploaded_image(self.image, max_size=(2200, 1600))
@@ -533,10 +614,24 @@ class HomeSectionMedia(TimeStampedModel):
 
     def clean(self):
         super().clean()
+        validate_media_pair(self, "image", "image_url", "الصورة")
+        validate_media_pair(self, "video", "video_url", "الفيديو")
+        validate_media_pair(self, "mobile_video", "mobile_video_url", "فيديو الجوال")
+        validate_media_pair(self, "poster", "poster_url", "صورة انتظار الفيديو")
+        validate_cta_pair(self, "link_label", "link_url", "الرابط")
         if self.media_type == "image" and not (self.image or self.image_url):
             raise ValidationError("عنصر الصورة يحتاج صورة مرفوعة أو رابط صورة.")
         if self.media_type == "video" and not (self.video or self.video_url):
             raise ValidationError("عنصر الفيديو يحتاج فيديو مرفوع أو رابط فيديو.")
+        has_image = bool(self.image or self.image_url)
+        has_video = bool(self.video or self.video_url or self.mobile_video or self.mobile_video_url or self.poster or self.poster_url)
+        if self.media_type == "text" and (has_image or has_video):
+            raise ValidationError("عنصر النص لا يعرض وسائط. اختر نوع صورة أو فيديو قبل الرفع.")
+        if self.media_type == "image" and has_video:
+            raise ValidationError("عنصر الصورة لا يعرض حقول الفيديو. غيّر نوع العنصر أو امسح الفيديو.")
+        if self.media_type == "video" and has_image:
+            raise ValidationError("للفيديو استخدم Poster كصورة انتظار، واترك حقل الصورة فارغًا.")
+        validate_home_media_repetition(self)
 
     def save(self, *args, **kwargs):
         if self.image:
