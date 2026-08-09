@@ -35,7 +35,7 @@ const nextConfig: NextConfig = {
       "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com",
       "style-src 'self' 'unsafe-inline'",
       "font-src 'self' data:",
-      "media-src 'self' blob:",
+      "media-src 'self' blob: https://res.cloudinary.com",
       `img-src 'self' data: blob: ${apiOrigin} https://res.cloudinary.com https://getsiaq.online https://www.getsiaq.online https://www.google-analytics.com https://stats.g.doubleclick.net`,
       "connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://stats.g.doubleclick.net",
       "frame-src https://www.googletagmanager.com",

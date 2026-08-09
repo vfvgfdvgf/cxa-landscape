@@ -26,6 +26,8 @@ from .models import (
     BlogTag,
     City,
     District,
+    HomeSection,
+    HomeSectionMedia,
     CityServicePage,
     ConversionEvent,
     Lead,
@@ -181,6 +183,95 @@ class SiteSettingsAdmin(SingletonAdmin):
             obj.homepage_hero_focus_x,
             obj.homepage_hero_focus_y,
         )
+
+
+class HomeSectionMediaInline(admin.StackedInline):
+    model = HomeSectionMedia
+    extra = 0
+    show_change_link = True
+    fieldsets = (
+        (None, {"fields": (("media_type", "is_active", "sort_order"), ("label", "title"), "description", "alt_text")}),
+        ("الصورة", {"fields": (("image", "image_url"),), "classes": ("collapse",)}),
+        ("الفيديو", {"fields": (("video", "video_url"), ("mobile_video", "mobile_video_url"), ("poster", "poster_url")), "classes": ("collapse",)}),
+        ("الرابط", {"fields": (("link_label", "link_url"),), "classes": ("collapse",)}),
+    )
+
+
+@admin.register(HomeSection, site=admin_site)
+class HomeSectionAdmin(SafeChangelistAdmin):
+    list_display = ("section_name", "title_excerpt", "theme", "media_count", "is_visible", "sort_order", "updated_at")
+    list_editable = ("is_visible", "sort_order")
+    list_filter = ("theme", "is_visible")
+    search_fields = ("title", "eyebrow", "description", "supporting_text")
+    readonly_fields = ("section_preview",)
+    inlines = (HomeSectionMediaInline,)
+    fieldsets = (
+        ("القسم", {"fields": ("key", ("is_visible", "sort_order", "theme"))}),
+        ("النصوص", {"fields": ("eyebrow", "kicker", "title", "description", "supporting_text")}),
+        ("الأزرار", {"fields": (("primary_cta_label", "primary_cta_url"), ("secondary_cta_label", "secondary_cta_url"))}),
+        ("صورة القسم", {"fields": ("section_preview", ("image", "image_url"), "media_alt"), "classes": ("collapse",)}),
+        ("فيديو القسم", {"fields": (("video", "video_url"), ("mobile_video", "mobile_video_url"), ("poster", "poster_url"), "overlay_opacity"), "classes": ("collapse",)}),
+    )
+
+    def get_readonly_fields(self, request, obj=None):
+        fields = list(super().get_readonly_fields(request, obj))
+        if obj:
+            fields.append("key")
+        return tuple(fields)
+
+    @admin.display(description="اسم القسم", ordering="key")
+    def section_name(self, obj):
+        return obj.get_key_display()
+
+    @admin.display(description="العنوان")
+    def title_excerpt(self, obj):
+        title = " ".join((obj.title or "").split())
+        return title[:72] + ("…" if len(title) > 72 else "")
+
+    @admin.display(description="العناصر")
+    def media_count(self, obj):
+        return obj.items.count()
+
+    @admin.display(description="معاينة الوسائط")
+    def section_preview(self, obj):
+        if not obj:
+            return "احفظ القسم أولًا لعرض المعاينة."
+        if obj.video_resolved:
+            return format_html(
+                '<video src="{}" poster="{}" controls muted playsinline style="display:block;width:min(100%,720px);height:280px;object-fit:cover;background:#0c0f0d"></video>',
+                obj.video_resolved,
+                obj.poster_resolved or "",
+            )
+        if obj.image_resolved:
+            return format_html(
+                '<img src="{}" alt="" style="display:block;width:min(100%,720px);height:280px;object-fit:cover;background:#0c0f0d">',
+                obj.image_resolved,
+            )
+        return "ما تم اختيار صورة أو فيديو لهذا القسم."
+
+
+@admin.register(HomeSectionMedia, site=admin_site)
+class HomeSectionMediaAdmin(SafeChangelistAdmin):
+    list_display = ("preview", "title", "section", "media_type", "is_active", "sort_order", "updated_at")
+    list_editable = ("is_active", "sort_order")
+    list_filter = ("section", "media_type", "is_active")
+    search_fields = ("title", "label", "description", "alt_text")
+    autocomplete_fields = ("section",)
+    fieldsets = (
+        ("العنصر", {"fields": ("section", ("media_type", "is_active", "sort_order"), "label", "title", "description", "alt_text")}),
+        ("الصورة", {"fields": (("image", "image_url"),)}),
+        ("الفيديو", {"fields": (("video", "video_url"), ("mobile_video", "mobile_video_url"), ("poster", "poster_url"))}),
+        ("الرابط", {"fields": (("link_label", "link_url"),)}),
+    )
+
+    @admin.display(description="معاينة")
+    def preview(self, obj):
+        source = obj.poster_resolved or obj.image_resolved
+        if source:
+            return format_html('<img src="{}" alt="" style="width:72px;height:52px;object-fit:cover;border-radius:6px">', source)
+        if obj.video_resolved:
+            return format_html('<video src="{}" muted style="width:72px;height:52px;object-fit:cover;border-radius:6px"></video>', obj.video_resolved)
+        return "—"
 
 
 @admin.register(SiteVerification, site=admin_site)

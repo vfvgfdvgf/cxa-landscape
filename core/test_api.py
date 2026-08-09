@@ -12,6 +12,7 @@ from core.models import (
     City,
     CityServicePage,
     District,
+    HomeSection,
     Lead,
     LegacyRedirect,
     Page,
@@ -43,6 +44,9 @@ class PublicApiTests(TestCase):
         settings_obj.homepage_hero_focus_y = 38
         settings_obj.homepage_hero_overlay_opacity = 68
         settings_obj.save()
+        hero_section = HomeSection.objects.get(key="hero")
+        hero_section.overlay_opacity = 68
+        hero_section.save()
         Page.objects.create(
             title="الرئيسية",
             slug="home",
@@ -122,10 +126,26 @@ class PublicApiTests(TestCase):
         self.assertIn("hero-mobile.jpg", site.data["hero_mobile_image"]["url"])
         self.assertEqual(site.data["hero_settings"]["focus_x"], 64)
         self.assertEqual(home.status_code, 200)
-        self.assertEqual(home.data["hero"]["title"], "حلول خارجية تعيش طويلًا")
+        self.assertEqual(home.data["hero"]["title"], "تنسيق حدائق\nولاندسكيب\nيصنع الفرق.")
         self.assertIn("hero-mobile.jpg", home.data["hero"]["mobile_image"]["url"])
         self.assertEqual(home.data["hero"]["overlay_opacity"], 68)
         self.assertTrue(home.data["services"])
+        self.assertTrue(home.data["sections"])
+        self.assertEqual(home.data["hero"]["video"], "/videos/hero-triptych.mp4")
+        self.assertIn("faq", {item["key"] for item in home.data["sections"]})
+
+    def test_homepage_cms_content_is_exposed_without_code_changes(self):
+        manifesto = HomeSection.objects.get(key="manifesto")
+        manifesto.title = "عنوان قابل للتحرير من لوحة التحكم"
+        manifesto.description = "نص محدث ينعكس في الواجهة من خلال API."
+        manifesto.save()
+
+        response = self.client.get("/api/v1/home/")
+
+        self.assertEqual(response.status_code, 200)
+        payload = next(item for item in response.data["sections"] if item["key"] == "manifesto")
+        self.assertEqual(payload["title"], "عنوان قابل للتحرير من لوحة التحكم")
+        self.assertEqual(payload["description"], "نص محدث ينعكس في الواجهة من خلال API.")
 
     def test_frontend_origin_receives_cors_headers(self):
         response = self.client.get(

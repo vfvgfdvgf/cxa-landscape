@@ -75,6 +75,10 @@ services:
         value: "True"
       - key: API_PAGE_SIZE
         value: "12"
+      - key: DATA_UPLOAD_MAX_MEMORY_SIZE
+        value: "41943040"
+      - key: FILE_UPLOAD_MAX_MEMORY_SIZE
+        value: "5242880"
       - key: API_SUBMISSION_RATE
         value: 10/hour
       - key: DJANGO_BOOTSTRAP_ON_START

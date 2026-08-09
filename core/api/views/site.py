@@ -14,7 +14,7 @@ from core.api.serializers import (
     SiteSettingsSerializer,
     TestimonialSerializer,
 )
-from core.api.utils import clean_text, image_payload, seo_payload
+from core.api.utils import absolute_media_url, clean_text, image_payload, seo_payload
 from core.context_processors import resolve_navigation_items
 from core.health import readiness_status
 from core.models import (
@@ -24,6 +24,8 @@ from core.models import (
     City,
     CityServicePage,
     District,
+    HomeSection,
+    HomeSectionMedia,
     LegacyRedirect,
     LibraryImage,
     Page,
@@ -33,6 +35,74 @@ from core.models import (
     SiteSettings,
     Testimonial,
 )
+
+
+FRONTEND_PUBLIC_MEDIA_PREFIXES = ("/videos/", "/video-posters/", "/editorial/", "/images/")
+
+
+def _home_media_url(request, value):
+    if not value:
+        return ""
+    if hasattr(value, "url"):
+        try:
+            value = value.url
+        except (OSError, ValueError):
+            return ""
+    raw_value = str(value)
+    if raw_value.startswith(FRONTEND_PUBLIC_MEDIA_PREFIXES):
+        return raw_value
+    return absolute_media_url(request, raw_value)
+
+
+def _home_image_payload(request, value, alt):
+    payload = image_payload(request, value, alt)
+    if payload and isinstance(value, str) and value.startswith(FRONTEND_PUBLIC_MEDIA_PREFIXES):
+        payload["url"] = value
+    return payload
+
+
+def _home_section_payload(request, section):
+    items = []
+    for item in getattr(section, "active_items", ()):
+        items.append(
+            {
+                "id": item.pk,
+                "media_type": item.media_type,
+                "label": clean_text(item.label),
+                "title": clean_text(item.title),
+                "description": clean_text(item.description),
+                "alt": clean_text(item.alt_text or item.title),
+                "image": _home_image_payload(request, item.image or item.image_url, item.alt_text or item.title),
+                "video": _home_media_url(request, item.video or item.video_url),
+                "mobile_video": _home_media_url(request, item.mobile_video or item.mobile_video_url),
+                "poster": _home_media_url(request, item.poster or item.poster_url),
+                "link": {"label": clean_text(item.link_label), "url": item.link_url},
+                "sort_order": item.sort_order,
+            }
+        )
+    return {
+        "key": section.key,
+        "eyebrow": clean_text(section.eyebrow),
+        "kicker": clean_text(section.kicker),
+        "title": clean_text(section.title),
+        "description": clean_text(section.description),
+        "supporting_text": clean_text(section.supporting_text),
+        "primary_cta": {"label": clean_text(section.primary_cta_label), "url": section.primary_cta_url},
+        "secondary_cta": {"label": clean_text(section.secondary_cta_label), "url": section.secondary_cta_url},
+        "media": {
+            "image": _home_image_payload(request, section.image or section.image_url, section.media_alt or section.title),
+            "video": _home_media_url(request, section.video or section.video_url),
+            "mobile_video": _home_media_url(request, section.mobile_video or section.mobile_video_url),
+            "poster": _home_media_url(request, section.poster or section.poster_url),
+            "alt": clean_text(section.media_alt or section.title),
+            "overlay_opacity": section.overlay_opacity,
+        },
+        "theme": section.theme,
+        "sort_order": section.sort_order,
+        "is_visible": section.is_visible,
+        "items": items,
+        "updated_at": section.updated_at.isoformat(),
+    }
 
 
 class HealthView(APIView):
@@ -71,6 +141,15 @@ class HomeView(APIView):
     def get(self, request):
         settings_obj = SiteSettings.load()
         home_page = Page.objects.filter(is_visible=True, template_key="home").first()
+        active_home_items = HomeSectionMedia.objects.filter(is_active=True).order_by("sort_order", "id")
+        home_sections = list(
+            HomeSection.objects.prefetch_related(
+                Prefetch("items", queryset=active_home_items, to_attr="active_items")
+            ).order_by("sort_order", "key")
+        )
+        section_payloads = [_home_section_payload(request, section) for section in home_sections]
+        sections_by_key = {section.key: section for section in home_sections}
+        hero_section = sections_by_key.get("hero")
         services = Service.objects.filter(is_visible=True).select_related(
             "category", "primary_city"
         )[:8]
@@ -88,7 +167,11 @@ class HomeView(APIView):
         ).select_related("category", "city", "district")[:6]
         testimonials = Testimonial.objects.filter(is_visible=True, is_verified=True).order_by("display_order", "-created_at")[:8]
 
-        hero_source = settings_obj.homepage_hero_background or settings_obj.homepage_hero_background_url
+        hero_source = (
+            (hero_section.image or hero_section.image_url)
+            if hero_section and (hero_section.image or hero_section.image_url)
+            else settings_obj.homepage_hero_background or settings_obj.homepage_hero_background_url
+        )
         if not hero_source:
             hero_record = LibraryImage.objects.filter(is_active=True, usage_group="home_hero").order_by("sort_order").first()
             hero_source = hero_record.image_url if hero_record else ""
@@ -96,8 +179,16 @@ class HomeView(APIView):
             settings_obj.homepage_hero_mobile_background
             or settings_obj.homepage_hero_mobile_background_url
         )
-        hero_title = home_page.hero_title if home_page and home_page.hero_title else settings_obj.homepage_meta_title
-        hero_text = home_page.intro_text if home_page and home_page.intro_text else settings_obj.homepage_meta_description
+        hero_title = (
+            hero_section.title
+            if hero_section and hero_section.title
+            else home_page.hero_title if home_page and home_page.hero_title else settings_obj.homepage_meta_title
+        )
+        hero_text = (
+            hero_section.description
+            if hero_section and hero_section.description
+            else home_page.intro_text if home_page and home_page.intro_text else settings_obj.homepage_meta_description
+        )
         service_count = Service.objects.filter(is_visible=True).count()
         project_counts = Project.objects.filter(is_visible=True).aggregate(
             portfolio=Count("pk", filter=Q(record_type="portfolio")),
@@ -113,6 +204,8 @@ class HomeView(APIView):
                 "site": SiteSettingsSerializer(settings_obj, context=context).data,
                 "navigation": NavigationSerializer(navigation, many=True).data,
                 "hero": {
+                    "eyebrow": clean_text(hero_section.eyebrow) if hero_section else "نخيل نجد",
+                    "kicker": clean_text(hero_section.kicker) if hero_section else "PALMS · LANDSCAPE · SAUDI ARABIA",
                     "title": clean_text(hero_title),
                     "description": clean_text(hero_text),
                     "image": image_payload(
@@ -127,10 +220,20 @@ class HomeView(APIView):
                     ),
                     "focus_x": settings_obj.homepage_hero_focus_x,
                     "focus_y": settings_obj.homepage_hero_focus_y,
-                    "overlay_opacity": settings_obj.homepage_hero_overlay_opacity,
-                    "primary_cta": {"label": "اطلب معاينة", "url": "/contact/"},
-                    "secondary_cta": {"label": "استعرض خدماتنا", "url": "/services/"},
+                    "overlay_opacity": hero_section.overlay_opacity if hero_section else settings_obj.homepage_hero_overlay_opacity,
+                    "video": _home_media_url(request, hero_section.video or hero_section.video_url) if hero_section else "",
+                    "mobile_video": _home_media_url(request, hero_section.mobile_video or hero_section.mobile_video_url) if hero_section else "",
+                    "poster": _home_media_url(request, hero_section.poster or hero_section.poster_url) if hero_section else "",
+                    "primary_cta": {
+                        "label": clean_text(hero_section.primary_cta_label) if hero_section and hero_section.primary_cta_label else "اطلب معاينة",
+                        "url": hero_section.primary_cta_url if hero_section and hero_section.primary_cta_url else "/contact/",
+                    },
+                    "secondary_cta": {
+                        "label": clean_text(hero_section.secondary_cta_label) if hero_section and hero_section.secondary_cta_label else "استعرض خدماتنا",
+                        "url": hero_section.secondary_cta_url if hero_section and hero_section.secondary_cta_url else "/services/",
+                    },
                 },
+                "sections": section_payloads,
                 "services": ServiceCardSerializer(services, many=True, context=context).data,
                 "projects": ProjectCardSerializer(projects, many=True, context=context).data,
                 "cities": HomeCitySerializer(cities, many=True, context=context).data,

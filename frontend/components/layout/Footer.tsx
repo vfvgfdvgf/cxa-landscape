@@ -9,6 +9,13 @@ import type { SiteSettings } from "@/types";
 export function Footer({ site }: { site: SiteSettings | null }) {
   return (
     <footer className="site-footer">
+      <Container className="footer-callout">
+        <div>
+          <span>مشروع جديد · مساحة جديدة</span>
+          <h2>خلّنا نحوّل فكرتك<br />إلى مشهد يعيش.</h2>
+        </div>
+        <Link className="cinematic-button" href="/quote-request/">اطلب عرض سعر <b aria-hidden="true">↗</b></Link>
+      </Container>
       <Container className="footer-grid">
         <div>
           <Link className="brand brand--footer" href="/" aria-label={`${site?.site_name || "نخيل نجد"} — الرئيسية`}><BrandIdentity site={site} compact /></Link>
@@ -18,6 +25,7 @@ export function Footer({ site }: { site: SiteSettings | null }) {
         <div><h2>معلومات</h2><Link href="/about/">من نحن</Link><Link href="/quote-request/">طلب عرض سعر</Link><Link href="/cost-calculator/">حاسبة التكلفة</Link><Link href="/privacy/">سياسة الخصوصية</Link><Link href="/terms/">الشروط والأحكام</Link></div>
         <div><h2>تواصل</h2>{site?.contact_phone ? <a href={`tel:${site.contact_phone}`}>{site.contact_phone}</a> : null}{site?.email ? <a href={`mailto:${site.email}`}>{site.email}</a> : null}<a className="whatsapp-link" href={whatsappUrl(site?.whatsapp_number)} target="_blank" rel="noreferrer"><Image src="/images/whatsapp.svg" width={20} height={20} alt="" /> واتساب</a></div>
       </Container>
+      <div className="footer-wordmark" aria-hidden="true">NAKHEEL NAJD</div>
       <Container className="footer-bottom"><span>© {new Date().getFullYear()} {site?.site_name || "نخيل نجد"}</span><span>الموقع العام: getsiaq.online</span></Container>
     </footer>
   );

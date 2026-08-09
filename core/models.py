@@ -5,7 +5,7 @@ from urllib.parse import urlsplit
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import FileExtensionValidator, MaxValueValidator, MinValueValidator
 from django.core.files.storage import default_storage
 from django.db import models
 from django.db.models.deletion import ProtectedError
@@ -19,12 +19,57 @@ def validate_image_source(value):
     """Allow secure remote images and the local public media paths used by the project."""
     if not value:
         return
-    if value.startswith(("/static/", "/media/", "/media-db/")):
+    if value.startswith((
+        "/static/",
+        "/media/",
+        "/media-db/",
+        "/editorial/",
+        "/video-posters/",
+        "/images/",
+    )):
         return
     parsed = urlsplit(value)
     if parsed.scheme == "https" and parsed.netloc:
         return
-    raise ValidationError("استخدم رابط HTTPS أو مسارًا يبدأ بـ /static/ أو /media/.")
+    raise ValidationError("استخدم رابط HTTPS أو مسار وسائط عامًا معتمدًا مثل /media/ أو /editorial/.")
+
+
+def validate_video_source(value):
+    """Allow secure remote videos and the optimized public video paths."""
+    if not value:
+        return
+    if value.startswith(("/videos/", "/media/")):
+        return
+    parsed = urlsplit(value)
+    if parsed.scheme == "https" and parsed.netloc:
+        return
+    raise ValidationError("استخدم رابط فيديو HTTPS أو مسارًا يبدأ بـ /videos/ أو /media/.")
+
+
+def validate_link_target(value):
+    """Keep CMS CTA targets internal or on secure external destinations."""
+    if not value:
+        return
+    if value.startswith("/") and not value.startswith("//"):
+        return
+    parsed = urlsplit(value)
+    if parsed.scheme == "https" and parsed.netloc:
+        return
+    raise ValidationError("استخدم رابطًا داخليًا يبدأ بـ / أو رابط HTTPS كاملًا.")
+
+
+def validate_home_video_size(value):
+    if value and getattr(value, "size", 0) > 30 * 1024 * 1024:
+        raise ValidationError("حجم الفيديو يجب ألا يتجاوز 30 ميجابايت بعد الضغط.")
+
+
+def home_video_storage():
+    """Use Cloudinary's video resource type only when production media is enabled."""
+    if getattr(settings, "USE_CLOUDINARY_MEDIA", False):
+        from cloudinary_storage.storage import VideoMediaCloudinaryStorage
+
+        return VideoMediaCloudinaryStorage()
+    return default_storage
 
 
 def normalize_image_field_name(name, upload_prefix):
@@ -74,10 +119,10 @@ class SiteSettings(TimeStampedModel):
     tagline = models.CharField(max_length=255, default="خدمات متكاملة في جميع مدن السعودية")
     homepage_meta_title = models.CharField(
         max_length=255,
-        default="لاندسكيب وتنسيق حدائق وأشجار ونخيل في السعودية",
+        default="تنسيق حدائق ولاندسكيب وزراعة نخيل في السعودية | نخيل نجد",
     )
     homepage_meta_description = models.TextField(
-        default="شركة سعودية متخصصة في تصميم الحدائق وتنفيذ اللاندسكيب وزراعة الأشجار والنخيل وأنظمة الري في جميع مدن المملكة."
+        default="تصميم وتنفيذ تنسيق الحدائق واللاندسكيب وزراعة ونقل النخيل وشبكات الري وصيانة المساحات الخارجية في مدن السعودية بخطة واضحة تناسب الموقع والمناخ."
     )
     homepage_hero_background = models.ImageField(upload_to="site-settings/", blank=True, null=True)
     homepage_hero_background_url = models.CharField(max_length=500, blank=True, validators=[validate_image_source])
@@ -149,7 +194,7 @@ class SiteSettings(TimeStampedModel):
     seo_default_keywords = models.CharField(
         max_length=500,
         blank=True,
-        default="لاندسكيب, تصميم حدائق, تنسيق حدائق, أشجار, نخيل, مظلات, شبوك, السعودية",
+        default="تنسيق حدائق, شركة تنسيق حدائق, لاندسكيب, تصميم حدائق منزلية, زراعة نخيل, نقل نخيل, شبكات ري, صيانة حدائق, السعودية",
         help_text="كلمات مفتاحية افتراضية مفصولة بفواصل.",
     )
     seo_default_description = models.TextField(
@@ -355,6 +400,166 @@ class PageMedia(models.Model):
     @property
     def display_alt(self):
         return self.alt_text or self.title
+
+
+class HomeSection(TimeStampedModel):
+    """Editable presentation and media settings for each fixed homepage section."""
+
+    SECTION_CHOICES = [
+        ("hero", "الهيرو الرئيسي"),
+        ("manifesto", "الرؤية والتعريف"),
+        ("stories", "قصص من الميدان"),
+        ("gallery", "معرض الصور"),
+        ("services", "الخدمات"),
+        ("process", "منهج التنفيذ"),
+        ("feature", "المشروع المميز"),
+        ("coverage", "نطاق التغطية"),
+        ("projects", "معرض الأعمال"),
+        ("testimonials", "آراء العملاء"),
+        ("insights", "المقالات"),
+        ("faq", "الأسئلة الشائعة"),
+        ("closing", "دعوة التواصل الختامية"),
+        ("marquee", "الشريط المتحرك"),
+    ]
+    THEME_CHOICES = [
+        ("dark", "داكن"),
+        ("paper", "فاتح"),
+        ("media", "صورة أو فيديو كامل"),
+    ]
+    video_validators = [
+        FileExtensionValidator(allowed_extensions=["mp4", "webm", "mov"]),
+        validate_home_video_size,
+    ]
+
+    key = models.CharField(max_length=30, choices=SECTION_CHOICES, unique=True, verbose_name="القسم")
+    eyebrow = models.CharField(max_length=140, blank=True, verbose_name="العنوان الصغير")
+    kicker = models.CharField(max_length=180, blank=True, verbose_name="السطر التعريفي")
+    title = models.TextField(blank=True, verbose_name="العنوان الرئيسي", help_text="يمكن وضع كل جزء من العنوان في سطر مستقل.")
+    description = models.TextField(blank=True, verbose_name="النص الوصفي")
+    supporting_text = models.TextField(blank=True, verbose_name="نص إضافي")
+    primary_cta_label = models.CharField(max_length=80, blank=True, verbose_name="نص الزر الرئيسي")
+    primary_cta_url = models.CharField(max_length=500, blank=True, validators=[validate_link_target], verbose_name="رابط الزر الرئيسي")
+    secondary_cta_label = models.CharField(max_length=80, blank=True, verbose_name="نص الزر الثاني")
+    secondary_cta_url = models.CharField(max_length=500, blank=True, validators=[validate_link_target], verbose_name="رابط الزر الثاني")
+    image = models.ImageField(upload_to="home-sections/images/", blank=True, null=True, verbose_name="صورة القسم")
+    image_url = models.CharField(max_length=500, blank=True, validators=[validate_image_source], verbose_name="رابط صورة القسم")
+    video = models.FileField(upload_to="home-sections/videos/", storage=home_video_storage, blank=True, null=True, validators=video_validators, verbose_name="فيديو القسم")
+    video_url = models.CharField(max_length=500, blank=True, validators=[validate_video_source], verbose_name="رابط فيديو القسم")
+    mobile_video = models.FileField(upload_to="home-sections/videos/mobile/", storage=home_video_storage, blank=True, null=True, validators=video_validators, verbose_name="فيديو الجوال")
+    mobile_video_url = models.CharField(max_length=500, blank=True, validators=[validate_video_source], verbose_name="رابط فيديو الجوال")
+    poster = models.ImageField(upload_to="home-sections/posters/", blank=True, null=True, verbose_name="صورة انتظار الفيديو")
+    poster_url = models.CharField(max_length=500, blank=True, validators=[validate_image_source], verbose_name="رابط صورة انتظار الفيديو")
+    media_alt = models.CharField(max_length=220, blank=True, verbose_name="وصف الصورة أو الفيديو")
+    overlay_opacity = models.PositiveSmallIntegerField(
+        default=62,
+        validators=[MinValueValidator(0), MaxValueValidator(95)],
+        verbose_name="تعتيم الوسائط (%)",
+    )
+    theme = models.CharField(max_length=12, choices=THEME_CHOICES, default="paper", verbose_name="نمط القسم")
+    sort_order = models.PositiveSmallIntegerField(default=0, verbose_name="ترتيب القسم")
+    is_visible = models.BooleanField(default=True, verbose_name="إظهار القسم")
+
+    class Meta:
+        verbose_name = "قسم ثابت في الرئيسية"
+        verbose_name_plural = "أقسام الصفحة الرئيسية"
+        ordering = ["sort_order", "key"]
+        indexes = [models.Index(fields=["is_visible", "sort_order"], name="home_section_visible_idx")]
+
+    def __str__(self):
+        return self.get_key_display()
+
+    def save(self, *args, **kwargs):
+        if self.image:
+            optimize_uploaded_image(self.image, max_size=(2200, 1600))
+        if self.poster:
+            optimize_uploaded_image(self.poster, max_size=(2200, 1600))
+        super().save(*args, **kwargs)
+
+    @property
+    def image_resolved(self):
+        return self.image.url if self.image else self.image_url
+
+    @property
+    def video_resolved(self):
+        return self.video.url if self.video else self.video_url
+
+    @property
+    def mobile_video_resolved(self):
+        return self.mobile_video.url if self.mobile_video else self.mobile_video_url
+
+    @property
+    def poster_resolved(self):
+        return self.poster.url if self.poster else self.poster_url
+
+
+class HomeSectionMedia(TimeStampedModel):
+    MEDIA_CHOICES = [
+        ("text", "نص أو خطوة"),
+        ("image", "صورة"),
+        ("video", "فيديو"),
+    ]
+    video_validators = [
+        FileExtensionValidator(allowed_extensions=["mp4", "webm", "mov"]),
+        validate_home_video_size,
+    ]
+
+    section = models.ForeignKey(HomeSection, on_delete=models.CASCADE, related_name="items", verbose_name="القسم")
+    media_type = models.CharField(max_length=10, choices=MEDIA_CHOICES, default="text", verbose_name="نوع العنصر")
+    label = models.CharField(max_length=140, blank=True, verbose_name="التصنيف أو الرقم")
+    title = models.CharField(max_length=240, verbose_name="العنوان")
+    description = models.TextField(blank=True, verbose_name="الوصف")
+    alt_text = models.CharField(max_length=220, blank=True, verbose_name="الوصف البديل")
+    image = models.ImageField(upload_to="home-sections/items/images/", blank=True, null=True, verbose_name="الصورة")
+    image_url = models.CharField(max_length=500, blank=True, validators=[validate_image_source], verbose_name="رابط الصورة")
+    video = models.FileField(upload_to="home-sections/items/videos/", storage=home_video_storage, blank=True, null=True, validators=video_validators, verbose_name="الفيديو")
+    video_url = models.CharField(max_length=500, blank=True, validators=[validate_video_source], verbose_name="رابط الفيديو")
+    mobile_video = models.FileField(upload_to="home-sections/items/videos/mobile/", storage=home_video_storage, blank=True, null=True, validators=video_validators, verbose_name="فيديو الجوال")
+    mobile_video_url = models.CharField(max_length=500, blank=True, validators=[validate_video_source], verbose_name="رابط فيديو الجوال")
+    poster = models.ImageField(upload_to="home-sections/items/posters/", blank=True, null=True, verbose_name="صورة انتظار الفيديو")
+    poster_url = models.CharField(max_length=500, blank=True, validators=[validate_image_source], verbose_name="رابط صورة انتظار الفيديو")
+    link_label = models.CharField(max_length=80, blank=True, verbose_name="نص الرابط")
+    link_url = models.CharField(max_length=500, blank=True, validators=[validate_link_target], verbose_name="الرابط")
+    sort_order = models.PositiveSmallIntegerField(default=0, verbose_name="الترتيب")
+    is_active = models.BooleanField(default=True, verbose_name="إظهار العنصر")
+
+    class Meta:
+        verbose_name = "عنصر داخل قسم رئيسي"
+        verbose_name_plural = "عناصر أقسام الرئيسية"
+        ordering = ["section__sort_order", "sort_order", "id"]
+        indexes = [models.Index(fields=["section", "is_active", "sort_order"], name="home_media_active_idx")]
+
+    def __str__(self):
+        return f"{self.section.get_key_display()} — {self.title}"
+
+    def clean(self):
+        super().clean()
+        if self.media_type == "image" and not (self.image or self.image_url):
+            raise ValidationError("عنصر الصورة يحتاج صورة مرفوعة أو رابط صورة.")
+        if self.media_type == "video" and not (self.video or self.video_url):
+            raise ValidationError("عنصر الفيديو يحتاج فيديو مرفوع أو رابط فيديو.")
+
+    def save(self, *args, **kwargs):
+        if self.image:
+            optimize_uploaded_image(self.image, max_size=(1800, 1800))
+        if self.poster:
+            optimize_uploaded_image(self.poster, max_size=(1800, 1800))
+        super().save(*args, **kwargs)
+
+    @property
+    def image_resolved(self):
+        return self.image.url if self.image else self.image_url
+
+    @property
+    def video_resolved(self):
+        return self.video.url if self.video else self.video_url
+
+    @property
+    def mobile_video_resolved(self):
+        return self.mobile_video.url if self.mobile_video else self.mobile_video_url
+
+    @property
+    def poster_resolved(self):
+        return self.poster.url if self.poster else self.poster_url
 
 
 class LibraryImage(TimeStampedModel):

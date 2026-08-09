@@ -27,6 +27,10 @@ export function PageHero({
       </div>
       <div className="page-hero__veil" />
       <Container className="page-hero__cinematic-content">
+        <div className="page-hero__edition" aria-hidden="true">
+          <span>NAKHEEL NAJD</span>
+          <span>{eyebrow || "LANDSCAPE"}</span>
+        </div>
         {eyebrow ? <div className="cinematic-label" data-reveal-line><span>{eyebrow}</span><i /></div> : null}
         <h1 data-reveal>{title}</h1>
         {description ? <p className="page-hero__lead" data-reveal>{description}</p> : null}

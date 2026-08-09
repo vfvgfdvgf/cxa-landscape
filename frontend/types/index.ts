@@ -283,6 +283,8 @@ export interface HomePageData {
   site: SiteSettings;
   navigation: NavigationItem[];
   hero: {
+    eyebrow: string;
+    kicker: string;
     title: string;
     description: string;
     image: ImageData | null;
@@ -290,9 +292,13 @@ export interface HomePageData {
     focus_x: number;
     focus_y: number;
     overlay_opacity: number;
+    video: string;
+    mobile_video: string;
+    poster: string;
     primary_cta: { label: string; url: string };
     secondary_cta: { label: string; url: string };
   };
+  sections: HomeSection[];
   services: Service[];
   projects: Project[];
   cities: HomeCity[];
@@ -307,6 +313,45 @@ export interface HomePageData {
     districts: number;
   };
   seo: SeoData;
+}
+
+export interface HomeSectionItem {
+  id: number;
+  media_type: "text" | "image" | "video" | string;
+  label: string;
+  title: string;
+  description: string;
+  alt: string;
+  image: ImageData | null;
+  video: string;
+  mobile_video: string;
+  poster: string;
+  link: { label: string; url: string };
+  sort_order: number;
+}
+
+export interface HomeSection {
+  key: string;
+  eyebrow: string;
+  kicker: string;
+  title: string;
+  description: string;
+  supporting_text: string;
+  primary_cta: { label: string; url: string };
+  secondary_cta: { label: string; url: string };
+  media: {
+    image: ImageData | null;
+    video: string;
+    mobile_video: string;
+    poster: string;
+    alt: string;
+    overlay_opacity: number;
+  };
+  theme: "dark" | "paper" | "media" | string;
+  sort_order: number;
+  is_visible: boolean;
+  items: HomeSectionItem[];
+  updated_at: string;
 }
 
 export interface PaginatedResponse<T> {
