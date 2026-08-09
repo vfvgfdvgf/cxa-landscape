@@ -62,6 +62,7 @@ export function CinematicVideo({ src, mobileSrc, poster, className, priority = f
       poster={poster}
       aria-hidden="true"
       tabIndex={-1}
+      style={{ pointerEvents: "none" }}
       onCanPlay={() => setReadySource(src)}
       onError={() => setFailedSource(src)}
     >

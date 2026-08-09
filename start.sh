@@ -4,6 +4,7 @@ set -o errexit
 python manage.py migrate --noinput
 python manage.py ensure_admin_user
 python manage.py ensure_public_catalog || echo "WARNING: public catalogue sync failed; serving existing data."
+python manage.py seed_market_intent_content || echo "WARNING: market-intent content seed failed; serving existing editorial data."
 
 if [ "${DJANGO_BOOTSTRAP_ON_START:-False}" = "True" ]; then
   python manage.py bootstrap_nakheel_najd

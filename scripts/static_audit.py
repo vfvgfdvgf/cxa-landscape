@@ -234,7 +234,15 @@ def check_frontend_contract() -> None:
     for marker in (".closing-scene > .image-frame", ".word-marquee__copy", ".cinematic-actions .cinematic-button"):
         if marker not in cinematic_css:
             fail(f"Homepage responsive editorial detail is missing: {marker}")
-
+    for marker in (".intent-rail", ".listing-grid", ".detail-layout--editorial", ".project-gallery-editorial"):
+        if marker not in cinematic_css:
+            fail(f"V6.6 editorial interior-page styling is missing: {marker}")
+    next_services = read("frontend/app/services/page.tsx")
+    next_blog = read("frontend/app/blog/page.tsx")
+    next_projects = read("frontend/app/projects/page.tsx")
+    for marker, source in (("IntentRail", next_services), ("IntentRail", next_blog), ("listing-grid--projects", next_projects)):
+        if marker not in source:
+            fail(f"V6.6 interior listing experience marker is missing: {marker}")
     middleware = read("core/middleware.py")
     for marker in ('"/static/"', '"cross-origin"'):
         if marker not in middleware:
@@ -263,6 +271,8 @@ def check_frontend_contract() -> None:
         fail("Compact homepage city serializer is missing")
 
     next_home = read("frontend/app/page.tsx")
+    if "SearchAction" not in next_home or "SERVICE_MARKET_INTENTS" not in next_home:
+        fail("Homepage search-intent SEO/internal-linking layer is incomplete")
     for marker in (
         'export const dynamic = "force-dynamic"',
         'cache: "no-store"',
@@ -397,6 +407,23 @@ def check_content_catalog() -> None:
     stats["all_service_specs"] = len(all_service_specs)
     stats["article_topics"] = len(article_topics)
     stats["project_media"] = len(project_media)
+
+    market_seed = ROOT / "core/management/commands/seed_market_intent_content.py"
+    try:
+        market_tree = ast.parse(market_seed.read_text(encoding="utf-8-sig"))
+        market_articles = []
+        for node in market_tree.body:
+            if isinstance(node, ast.Assign) and any(isinstance(target, ast.Name) and target.id == "ARTICLES" for target in node.targets):
+                market_articles = ast.literal_eval(node.value)
+                break
+        stats["market_intent_articles"] = len(market_articles)
+        if len(market_articles) < 60:
+            fail(f"Expected at least 60 high-intent national articles, found {len(market_articles)}")
+        if len({item[1] for item in market_articles}) != len(market_articles):
+            fail("Duplicate slugs in market-intent article seed")
+    except Exception as exc:
+        fail(f"Unable to validate market-intent article seed: {exc}")
+
     if city_count != 12:
         fail(f"Expected 12 fixed cities, found {city_count}")
     if district_count != 330:

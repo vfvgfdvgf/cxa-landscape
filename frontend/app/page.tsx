@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { cache } from "react";
 
+import { IntentRail } from "@/components/content/IntentRail";
 import { ResponsiveImage } from "@/components/content/ResponsiveImage";
 import { CoverageChart } from "@/components/data/CoverageChart";
 import { CinematicVideo } from "@/components/media/CinematicVideo";
@@ -9,6 +10,7 @@ import { JsonLd } from "@/components/seo/JsonLd";
 import { Container } from "@/components/ui/Container";
 import { djangoApi } from "@/lib/django-api";
 import { enforceHomeMediaBudget } from "@/lib/media-budget";
+import { SERVICE_MARKET_INTENTS } from "@/lib/market-intents";
 import { buildMetadata, SITE_URL } from "@/lib/metadata";
 import type { HomePageData, HomeSection } from "@/types";
 
@@ -65,7 +67,24 @@ function ItemAction({ label, url, dark = false }: { label: string; url: string; 
     : <Link className={className} href={url}>{content}</Link>;
 }
 
+function SectionVideoBackground({ section }: { section: HomeSection }) {
+  if (section.theme !== "media" || !section.media.video) return null;
+  return <div className="section-video-background" aria-hidden="true">
+    <CinematicVideo
+      src={section.media.video}
+      mobileSrc={section.media.mobile_video || undefined}
+      poster={section.media.poster || ""}
+      className="section-video-background__video"
+    />
+    <span
+      className="section-video-background__veil"
+      style={{ opacity: Math.max(.42, Math.min(.9, section.media.overlay_opacity / 100)) }}
+    />
+  </div>;
+}
+
 function ManagedSectionMedia({ section }: { section: HomeSection }) {
+  if (section.theme === "media" && section.media.video) return null;
   if (!section.media.video && !section.media.image) return null;
   return <figure className={`managed-section-media${section.media.video ? " managed-section-media--video" : ""}`} data-reveal>
     {section.media.video
@@ -121,6 +140,11 @@ export default async function HomePage() {
     name: home.site.site_name,
     url: SITE_URL,
     inLanguage: "ar-SA",
+    potentialAction: {
+      "@type": "SearchAction",
+      target: `${SITE_URL}/services/?q={search_term_string}`,
+      "query-input": "required name=search_term_string",
+    },
   };
   const serviceListSchema = {
     "@context": "https://schema.org",
@@ -192,6 +216,7 @@ export default async function HomePage() {
 
       {manifesto ? (
         <section className={`manifesto ${sectionTheme(manifesto, "dark")}`} style={{ order: manifesto.sort_order }} data-section-key={manifesto.key} data-section-order={manifesto.sort_order}>
+          <SectionVideoBackground section={manifesto} />
           <Container>
             <SectionLabel section={manifesto} fallback="من نحن" />
             <div className="manifesto__grid">
@@ -210,6 +235,7 @@ export default async function HomePage() {
 
       {stories ? (
         <section className={`story-section ${sectionTheme(stories, "paper")}`} style={{ order: stories.sort_order }} data-section-key={stories.key} data-section-order={stories.sort_order}>
+          <SectionVideoBackground section={stories} />
           <Container>
             <SectionLabel section={stories} fallback="قصص من الميدان" />
             <div className="story-section__heading">
@@ -238,6 +264,7 @@ export default async function HomePage() {
 
       {gallery ? (
         <section className={`owner-gallery ${sectionTheme(gallery, "paper")}`} style={{ order: gallery.sort_order }} data-section-key={gallery.key} data-section-order={gallery.sort_order}>
+          <SectionVideoBackground section={gallery} />
           <Container>
             <SectionLabel section={gallery} fallback="تفاصيل من أعمالنا" />
             <div className="owner-gallery__heading">
@@ -261,6 +288,7 @@ export default async function HomePage() {
 
       {services ? (
         <section className={`services-editorial ${sectionTheme(services, "dark")}`} style={{ order: services.sort_order }} data-section-key={services.key} data-section-order={services.sort_order}>
+          <SectionVideoBackground section={services} />
           <Container>
             <SectionLabel section={services} fallback="خدماتنا" />
             <div className="services-editorial__intro">
@@ -278,6 +306,12 @@ export default async function HomePage() {
                 </Link>
               ))}
             </div>
+            <IntentRail
+              eyebrow="احتياجات شائعة"
+              title="ادخل من السؤال اللي في بالك"
+              description="روابط مباشرة لأكثر مسارات الخدمة تكرارًا في بحث العملاء: العشب، الري، الصيانة، النخيل، الجلسات وتنسيق الفلل."
+              items={SERVICE_MARKET_INTENTS.slice(0, 8)}
+            />
             <SectionActions section={services} />
           </Container>
         </section>
@@ -285,6 +319,7 @@ export default async function HomePage() {
 
       {process ? (
         <section className={`process-editorial ${sectionTheme(process, "paper")}`} style={{ order: process.sort_order }} data-section-key={process.key} data-section-order={process.sort_order}>
+          <SectionVideoBackground section={process} />
           <Container>
             <SectionLabel section={process} fallback="منهج التنفيذ" />
             <div className="process-editorial__heading">
@@ -328,6 +363,7 @@ export default async function HomePage() {
 
       {coverageSection ? (
         <section className={`coverage-section ${sectionTheme(coverageSection, "paper")}`} style={{ order: coverageSection.sort_order }} data-section-key={coverageSection.key} data-section-order={coverageSection.sort_order}>
+          <SectionVideoBackground section={coverageSection} />
           <Container>
             <SectionLabel section={coverageSection} fallback="نطاق التغطية" />
             <ManagedSectionMedia section={coverageSection} />
@@ -356,6 +392,7 @@ export default async function HomePage() {
 
       {projects ? (
         <section className={`project-journal ${sectionTheme(projects, "dark")}`} style={{ order: projects.sort_order }} data-section-key={projects.key} data-section-order={projects.sort_order}>
+          <SectionVideoBackground section={projects} />
           <Container>
             <SectionLabel section={projects} fallback="معرض الأعمال" />
             <div className="project-journal__heading">
@@ -379,6 +416,7 @@ export default async function HomePage() {
 
       {testimonials ? (
         <section className={`testimonial-editorial ${sectionTheme(testimonials, "paper")}`} style={{ order: testimonials.sort_order }} data-section-key={testimonials.key} data-section-order={testimonials.sort_order}>
+          <SectionVideoBackground section={testimonials} />
           <Container>
             <SectionLabel section={testimonials} fallback="تجارب العملاء" />
             <div className="testimonial-editorial__heading">
@@ -403,6 +441,7 @@ export default async function HomePage() {
 
       {insights ? (
         <section className={`insights-section ${sectionTheme(insights, "paper")}`} style={{ order: insights.sort_order }} data-section-key={insights.key} data-section-order={insights.sort_order}>
+          <SectionVideoBackground section={insights} />
           <Container>
             <SectionLabel section={insights} fallback="دليل الخبرة" />
             <div className="insights-section__heading">
@@ -429,6 +468,7 @@ export default async function HomePage() {
 
       {faq ? (
         <section className={`faq-editorial ${sectionTheme(faq, "dark")}`} style={{ order: faq.sort_order }} data-section-key={faq.key} data-section-order={faq.sort_order}>
+          <SectionVideoBackground section={faq} />
           <Container>
             <SectionLabel section={faq} fallback="أسئلة قبل البداية" />
             <div className="faq-editorial__layout">
@@ -473,6 +513,7 @@ export default async function HomePage() {
 
       {marquee && marqueeItems.length ? (
         <section className={`word-marquee ${sectionTheme(marquee, "dark")}`} style={{ order: marquee.sort_order }} data-section-key={marquee.key} data-section-order={marquee.sort_order} aria-label={marqueeItems.join("، ")}>
+          <SectionVideoBackground section={marquee} />
           <Container className="word-marquee__header">
             <SectionLabel section={marquee} fallback="مجالات الخبرة" />
             {marquee.title || marquee.description ? <div className="word-marquee__copy"><h2 data-reveal>{marquee.title}</h2><p data-reveal>{marquee.description}</p></div> : null}

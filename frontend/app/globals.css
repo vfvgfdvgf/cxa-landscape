@@ -563,3 +563,9 @@ h3 { line-height: 1.35; }
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
 }
+
+/* V6.7 header interaction hardening: no glass blur. cinematic.css owns final colors. */
+.site-header {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
